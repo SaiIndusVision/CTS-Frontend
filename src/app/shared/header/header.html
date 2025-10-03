@@ -1,0 +1,11 @@
+<mat-toolbar color="primary" class="header-toolbar">
+  <span class="header-title">Slotify Dashboard</span>
+  <span class="spacer"></span>
+  <span class="user-info">
+    <mat-icon>person</mat-icon>
+    {{ apiService.getName() }} ({{ apiService.getRoleName() || 'User' }})
+  </span>
+  <button mat-icon-button (click)="logout()" class="logout-button">
+    <mat-icon>logout</mat-icon>
+  </button>
+</mat-toolbar>
