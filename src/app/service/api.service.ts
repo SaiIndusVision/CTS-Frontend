@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Router } from '@angular/router';
 import { environment } from '../../environments/environments';
 
 export interface LoginRequest {
@@ -93,7 +94,7 @@ export interface UsersResponse {
 export class ApiService {
   private baseUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.baseUrl}/login/`, credentials);
@@ -160,6 +161,11 @@ export class ApiService {
 
   getRefreshToken(): string | null {
     return localStorage.getItem('refresh_token');
+  }
+
+  logout(): void {
+    localStorage.clear(); // Clears all localStorage items
+    this.router.navigate(['/login']);
   }
 
   clearTokens(): void {
