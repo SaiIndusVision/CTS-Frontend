@@ -88,6 +88,12 @@ export interface UsersResponse {
   }[];
 }
 
+export interface Role {
+  id: number;
+  name: string;
+  is_active: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -132,10 +138,14 @@ export class ApiService {
     if (filters) {
       if (filters.name) params = params.set('name', filters.name);
       if (filters.email) params = params.set('email', filters.email);
-      if (filters.role) params = params.set('role', filters.role.toString());
+      if (filters.role !== undefined) params = params.set('role', filters.role.toString());
     }
 
     return this.http.get<UsersResponse>(`${this.baseUrl}/users/`, { params });
+  }
+
+  getRoles(): Observable<{ message: string; status: number; data: Role[] }> {
+    return this.http.get<{ message: string; status: number; data: Role[] }>(`${this.baseUrl}/role/`);
   }
 
   get<T>(endpoint: string): Observable<T> {
@@ -164,7 +174,7 @@ export class ApiService {
   }
 
   logout(): void {
-    localStorage.clear(); // Clears all localStorage items
+    localStorage.clear();
     this.router.navigate(['/login']);
   }
 

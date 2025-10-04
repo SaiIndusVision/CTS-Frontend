@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { ApiService } from '../service/api.service';
+import { Component, OnInit, HostListener } from '@angular/core';
+import { ApiService, Role, UsersResponse } from '../service/api.service';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { HeaderComponent } from '../shared/header/header';
@@ -12,22 +13,14 @@ import { SidebarComponent } from '../shared/sidebar/sidebar';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'; // Added for error messages
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 interface User {
   id: number;
   name: string;
   email: string;
   role: number | null;
-}
-
-interface UsersResponse {
-  message: string;
-  status: number;
-  count: number;
-  next: string | null;
-  previous: string | null;
-  data: User[];
+  role_name: string;
 }
 
 @Component({
@@ -40,11 +33,12 @@ interface UsersResponse {
     MatPaginatorModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatButtonModule,
     MatSidenavModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule, // Added
+    MatSnackBarModule,
     HeaderComponent,
     SidebarComponent
   ],
@@ -58,36 +52,61 @@ export class DashboardComponent implements OnInit {
   pageSize = 10;
   currentPage = 1;
   loading = false;
-  errorMessage = ''; // Added for error display
+  errorMessage = '';
+  roles: Role[] = [];
   filters = {
     name: '',
     email: '',
     role: undefined as number | undefined
   };
 
-  constructor(private apiService: ApiService, private snackBar: MatSnackBar) {} // Added MatSnackBar
+  constructor(private apiService: ApiService, private snackBar: MatSnackBar) {}
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: Event) {
+    // No mobile handling since dashboard.html has fixed sidebar
+  }
 
   ngOnInit(): void {
-    this.fetchUsers();
+    this.apiService.getRoles().subscribe({
+      next: (response) => {
+        this.roles = response.data.filter(role => role.is_active); // Only active roles
+        this.fetchUsers();
+      },
+      error: (err) => {
+        this.errorMessage = 'Failed to fetch roles. Using default role names.';
+        this.snackBar.open(this.errorMessage, 'Close', { duration: 5000 });
+        this.fetchUsers();
+      }
+    });
   }
 
   fetchUsers(): void {
     this.loading = true;
-    this.errorMessage = ''; // Clear previous errors
+    this.errorMessage = '';
     this.apiService.getUsers(this.currentPage, this.pageSize, this.filters).subscribe({
       next: (response: UsersResponse) => {
-        this.users = response.data ? response.data : []; // Ensure users is an array
+        this.users = response.data.map(user => ({
+          ...user,
+          role_name: this.getRoleNameById(user.role)
+        }));
         this.totalCount = response.count || 0;
         this.loading = false;
       },
       error: (err) => {
-        this.users = []; // Reset users to empty array on error
+        this.users = [];
         this.totalCount = 0;
         this.errorMessage = err.error?.message || 'Failed to fetch users. Please try again.';
         this.snackBar.open(this.errorMessage, 'Close', { duration: 5000 });
         this.loading = false;
       }
     });
+  }
+
+  getRoleNameById(roleId: number | null): string {
+    if (roleId === null) return 'Unassigned';
+    const role = this.roles.find(r => r.id === roleId);
+    return role ? role.name : 'Unknown';
   }
 
   onPageChange(event: PageEvent): void {

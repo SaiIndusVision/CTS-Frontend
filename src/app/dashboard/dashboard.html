@@ -15,7 +15,7 @@
     <app-header></app-header>
 
     <div class="content-wrapper">
-      <div class="page-header" style="padding-top: 2%;">
+      <div class="page-header">
         <div class="header-content">
           <h1 class="page-title">
             <mat-icon class="title-icon">people</mat-icon>
@@ -23,7 +23,6 @@
           </h1>
           <p class="page-subtitle">Manage and monitor all registered users</p>
         </div>
-        
       </div>
 
       <div class="filters-card">
@@ -45,8 +44,11 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="modern-input">
-            <mat-label>Role ID</mat-label>
-            <input matInput [(ngModel)]="filters.role" name="role" placeholder="Filter by role" type="number">
+            <mat-label>Role</mat-label>
+            <mat-select [(ngModel)]="filters.role" name="role" placeholder="Filter by role">
+              <mat-option [value]="undefined">All Roles</mat-option>
+              <mat-option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</mat-option>
+            </mat-select>
             <mat-icon matPrefix>badge</mat-icon>
           </mat-form-field>
 
@@ -73,54 +75,54 @@
       <div class="table-card" *ngIf="!loading && users && users.length > 0">
         <mat-table [dataSource]="users" class="modern-table">
           <ng-container matColumnDef="id">
-            <mat-header-cell *matHeaderCellDef> 
+            <mat-header-cell *matHeaderCellDef>
               <div class="header-cell">
                 <mat-icon>tag</mat-icon>
                 ID
               </div>
             </mat-header-cell>
-            <mat-cell *matCellDef="let user"> 
-              <span class="cell-badge">{{user.id}}</span>
+            <mat-cell *matCellDef="let user">
+              <span class="cell-badge">{{ user.id }}</span>
             </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="name">
-            <mat-header-cell *matHeaderCellDef> 
+            <mat-header-cell *matHeaderCellDef>
               <div class="header-cell">
                 <mat-icon>person</mat-icon>
                 Name
               </div>
             </mat-header-cell>
-            <mat-cell *matCellDef="let user"> 
+            <mat-cell *matCellDef="let user">
               <div class="user-cell">
-                <div class="user-avatar">{{user.name?.charAt(0) || 'U'}}</div>
-                <span class="user-name">{{user.name}}</span>
+                <div class="user-avatar">{{ user.name?.charAt(0) || 'U' }}</div>
+                <span class="user-name">{{ user.name }}</span>
               </div>
             </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="email">
-            <mat-header-cell *matHeaderCellDef> 
+            <mat-header-cell *matHeaderCellDef>
               <div class="header-cell">
                 <mat-icon>email</mat-icon>
                 Email
               </div>
             </mat-header-cell>
-            <mat-cell *matCellDef="let user"> 
-              <span class="email-text">{{user.email}}</span>
+            <mat-cell *matCellDef="let user">
+              <span class="email-text">{{ user.email }}</span>
             </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="role">
-            <mat-header-cell *matHeaderCellDef> 
+            <mat-header-cell *matHeaderCellDef>
               <div class="header-cell">
                 <mat-icon>badge</mat-icon>
                 Role
               </div>
             </mat-header-cell>
-            <mat-cell *matCellDef="let user"> 
+            <mat-cell *matCellDef="let user">
               <span class="role-badge" [class.no-role]="!user.role">
-                {{user.role || 'Unassigned'}}
+                {{ user.role_name }}
               </span>
             </mat-cell>
           </ng-container>
@@ -129,10 +131,10 @@
           <mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></mat-row>
         </mat-table>
 
-        <mat-paginator 
-          [length]="totalCount" 
-          [pageSize]="pageSize" 
-          [pageSizeOptions]="[5, 10, 20, 50]" 
+        <mat-paginator
+          [length]="totalCount"
+          [pageSize]="pageSize"
+          [pageSizeOptions]="[5, 10, 20, 50]"
           (page)="onPageChange($event)"
           class="modern-paginator">
         </mat-paginator>
@@ -145,4 +147,4 @@
       </div>
     </div>
   </mat-sidenav-content>
-</mat-sidenav-container>
+</mat-sidenav-container>  
