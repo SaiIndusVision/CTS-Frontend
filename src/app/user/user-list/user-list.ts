@@ -14,6 +14,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { RouterModule } from '@angular/router';
 
 interface User {
   id: number;
@@ -40,7 +41,8 @@ interface User {
     MatProgressSpinnerModule,
     MatSnackBarModule,
     HeaderComponent,
-    SidebarComponent
+    SidebarComponent,
+    RouterModule
   ],
   templateUrl: './user-list.html',
   styleUrls: ['./user-list.scss']
@@ -54,7 +56,8 @@ export class UserListComponent implements OnInit {
   loading = false;
   errorMessage = '';
   roles: Role[] = [];
-  viewMode: 'grid' | 'list' = 'grid'; // Default to grid view
+  viewMode: 'grid' | 'list' = 'grid';
+
   filters = {
     name: '',
     email: '',

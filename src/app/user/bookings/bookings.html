@@ -1,0 +1,216 @@
+<mat-sidenav-container class="dashboard-container">
+  <mat-sidenav mode="side" opened class="modern-sidenav">
+    <div class="sidebar-header">
+      <div class="logo-container">
+        <div class="logo-icon">
+          <mat-icon>admin_panel_settings</mat-icon>
+        </div>
+        <span class="logo-text">Slotify</span>
+      </div>
+    </div>
+    <app-sidebar></app-sidebar>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <app-header></app-header>
+    <div class="content-wrapper">
+      <div class="page-header">
+        <div class="header-content">
+          <h1 class="page-title">
+            <mat-icon class="title-icon">event</mat-icon>
+            Bookings Management
+          </h1>
+          <p class="page-subtitle">View and manage bookings for the selected user</p>
+        </div>
+        <button mat-icon-button (click)="toggleViewMode()" class="view-toggle-btn" title="Toggle View">
+          <mat-icon>{{ viewMode === 'grid' ? 'table_rows' : 'grid_view' }}</mat-icon>
+        </button>
+      </div>
+
+      <div class="filters-card">
+        <div class="card-header">
+          <mat-icon>filter_list</mat-icon>
+          <h3>Filter Bookings</h3>
+        </div>
+        <form class="filters-form" (ngSubmit)="applyFilters()">
+          <mat-form-field appearance="outline" class="modern-input">
+            <mat-label>Slot ID</mat-label>
+            <input matInput [(ngModel)]="filters.slot_id" name="slot_id" placeholder="Search by slot ID" type="number">
+            <mat-icon matPrefix>event</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="modern-input">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="filters.status" name="status" placeholder="Filter by status">
+              <mat-option [value]="''">All Statuses</mat-option>
+              <mat-option value="confirmed">Confirmed</mat-option>
+              <mat-option value="pending">Pending</mat-option>
+              <mat-option value="cancelled">Cancelled</mat-option>
+            </mat-select>
+            <mat-icon matPrefix>filter_alt</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="modern-input">
+            <mat-label>From Date</mat-label>
+            <input
+              matInput
+              [matDatepicker]="fromPicker"
+              [(ngModel)]="filters.from_date"
+              name="from_date"
+              placeholder="YYYY-MM-DD"
+            />
+            <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromPicker></mat-datepicker>
+            <mat-icon matPrefix>calendar_today</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="modern-input">
+            <mat-label>To Date</mat-label>
+            <input
+              matInput
+              [matDatepicker]="toPicker"
+              [(ngModel)]="filters.to_date"
+              name="to_date"
+              placeholder="YYYY-MM-DD"
+            />
+            <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+            <mat-datepicker #toPicker></mat-datepicker>
+            <mat-icon matPrefix>calendar_today</mat-icon>
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" type="submit" class="apply-btn">
+            <mat-icon>search</mat-icon>
+            Apply Filters
+          </button>
+        </form>
+      </div>
+
+      <div *ngIf="loading" class="loading-state">
+        <mat-spinner diameter="60"></mat-spinner>
+        <p class="loading-text">Loading bookings data...</p>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-card">
+        <mat-icon class="error-icon">error_outline</mat-icon>
+        <div class="error-content">
+          <h4>Error Loading Data</h4>
+          <p>{{ errorMessage }}</p>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && bookings && bookings.length > 0">
+        <!-- Grid View -->
+        <div *ngIf="viewMode === 'grid'" class="grid-card">
+          <div class="booking-grid">
+            <div *ngFor="let booking of bookings" class="booking-card">
+              <div class="booking-card-header">
+                <span class="booking-id">Booking #{{ booking.id }}</span>
+                <span class="status-badge" [class.cancelled]="booking.status === 'cancelled'">{{ booking.status | titlecase }}</span>
+              </div>
+              <div class="booking-card-content">
+                <div class="booking-info">
+                  <mat-icon>event</mat-icon>
+                  <span>Slot ID: {{ booking.slot }}</span>
+                </div>
+                <div class="booking-info">
+                  <mat-icon>calendar_today</mat-icon>
+                  <span>Created: {{ booking.created_at | date:'short' }}</span>
+                </div>
+                <div class="booking-info">
+                  <mat-icon>update</mat-icon>
+                  <span>Updated: {{ booking.updated_at | date:'short' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- List View (Table) -->
+        <div *ngIf="viewMode === 'list'" class="table-card">
+          <mat-table [dataSource]="bookings" class="modern-table">
+            <ng-container matColumnDef="id">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>tag</mat-icon>
+                  ID
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let booking">
+                <span class="cell-badge">{{ booking.id }}</span>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="slot">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>event</mat-icon>
+                  Slot ID
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let booking">
+                <span>{{ booking.slot }}</span>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="status">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>check_circle</mat-icon>
+                  Status
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let booking">
+                <span class="status-badge" [class.cancelled]="booking.status === 'cancelled'">
+                  {{ booking.status | titlecase }}
+                </span>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="created_at">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>calendar_today</mat-icon>
+                  Created At
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let booking">
+                <span>{{ booking.created_at | date:'short' }}</span>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="updated_at">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>update</mat-icon>
+                  Updated At
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let booking">
+                <span>{{ booking.updated_at | date:'short' }}</span>
+              </mat-cell>
+            </ng-container>
+
+            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></mat-row>
+          </mat-table>
+        </div>
+      </div>
+
+      <mat-paginator
+        *ngIf="!loading && bookings && bookings.length > 0"
+        [length]="totalCount"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[5, 10, 20, 50]"
+        (page)="onPageChange($event)"
+        class="modern-paginator"
+      >
+      </mat-paginator>
+
+      <div *ngIf="!loading && bookings && bookings.length === 0" class="empty-state">
+        <mat-icon class="empty-icon">inbox</mat-icon>
+        <h3>No Bookings Found</h3>
+        <p>Try adjusting your filters or check back later</p>
+      </div>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

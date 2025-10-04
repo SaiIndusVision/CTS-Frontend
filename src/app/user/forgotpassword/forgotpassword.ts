@@ -10,7 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { RouterModule } from '@angular/router';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; // Add this import
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-forgot-password',
@@ -25,7 +25,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; /
     MatIconModule,
     MatSnackBarModule,
     RouterModule,
-    MatProgressSpinnerModule // Add this to imports
+    MatProgressSpinnerModule
   ],
   templateUrl: './forgotpassword.html',
   styleUrls: ['./forgotpassword.scss']
@@ -33,6 +33,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; /
 export class ForgotPasswordComponent {
   forgotPasswordData: ForgotPasswordRequest = { email: '' };
   errorMessage = '';
+  successMessage = '';
   loading = false;
 
   constructor(private apiService: ApiService, private router: Router, private snackBar: MatSnackBar) {}
@@ -40,19 +41,31 @@ export class ForgotPasswordComponent {
   onSubmit(): void {
     this.loading = true;
     this.errorMessage = '';
+    this.successMessage = '';
 
     this.apiService.forgotPassword(this.forgotPasswordData).subscribe({
       next: (response: ForgotPasswordResponse) => {
-        this.snackBar.open(response.message, 'Close', { duration: 5000 });
+        this.successMessage = response.message || 'A password reset link has been sent to your email.';
+        this.snackBar.open(this.successMessage, 'Close', { 
+          duration: 5000,
+          panelClass: ['bg-green-600', 'text-white']
+        });
+        this.forgotPasswordData.email = ''; // Clear the form
         this.loading = false;
-        this.router.navigate(['/login']);
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Failed to send reset email. Please try again.';
-        this.snackBar.open(this.errorMessage, 'Close', { duration: 5000 });
+        this.snackBar.open(this.errorMessage, 'Close', { 
+          duration: 5000,
+          panelClass: ['bg-red-600', 'text-white']
+        });
         this.loading = false;
       },
       complete: () => (this.loading = false)
     });
+  }
+
+  navigateToLogin(): void {
+    this.router.navigate(['/login']);
   }
 }
