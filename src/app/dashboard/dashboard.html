@@ -23,6 +23,9 @@
           </h1>
           <p class="page-subtitle">Manage and monitor all registered users</p>
         </div>
+        <button mat-icon-button (click)="toggleViewMode()" class="view-toggle-btn" title="Toggle View">
+          <mat-icon>{{ viewMode === 'grid' ? 'table_rows' : 'grid_view' }}</mat-icon>
+        </button>
       </div>
 
       <div class="filters-card">
@@ -72,73 +75,103 @@
         </div>
       </div>
 
-      <div class="table-card" *ngIf="!loading && users && users.length > 0">
-        <mat-table [dataSource]="users" class="modern-table">
-          <ng-container matColumnDef="id">
-            <mat-header-cell *matHeaderCellDef>
-              <div class="header-cell">
-                <mat-icon>tag</mat-icon>
-                ID
-              </div>
-            </mat-header-cell>
-            <mat-cell *matCellDef="let user">
-              <span class="cell-badge">{{ user.id }}</span>
-            </mat-cell>
-          </ng-container>
-
-          <ng-container matColumnDef="name">
-            <mat-header-cell *matHeaderCellDef>
-              <div class="header-cell">
-                <mat-icon>person</mat-icon>
-                Name
-              </div>
-            </mat-header-cell>
-            <mat-cell *matCellDef="let user">
-              <div class="user-cell">
-                <div class="user-avatar">{{ user.name?.charAt(0) || 'U' }}</div>
+      <div *ngIf="!loading && users && users.length > 0">
+        <!-- Grid View -->
+        <div *ngIf="viewMode === 'grid'" class="grid-card">
+          <div class="user-grid">
+            <div *ngFor="let user of users" class="user-card">
+              <div class="user-card-header">
+                <!-- <div class="user-avatar">{{ user.name?.charAt(0) || 'U' }}</div> -->
                 <span class="user-name">{{ user.name }}</span>
               </div>
-            </mat-cell>
-          </ng-container>
-
-          <ng-container matColumnDef="email">
-            <mat-header-cell *matHeaderCellDef>
-              <div class="header-cell">
-                <mat-icon>email</mat-icon>
-                Email
+              <div class="user-card-content">
+                <div class="user-info">
+                  <mat-icon>tag</mat-icon>
+                  <span>ID: {{ user.id }}</span>
+                </div>
+                <div class="user-info">
+                  <mat-icon>email</mat-icon>
+                  <span class="email-text">{{ user.email }}</span>
+                </div>
+                <div class="user-info">
+                  <mat-icon>badge</mat-icon>
+                  <span class="role-badge" [class.no-role]="!user.role">{{ user.role_name }}</span>
+                </div>
               </div>
-            </mat-header-cell>
-            <mat-cell *matCellDef="let user">
-              <span class="email-text">{{ user.email }}</span>
-            </mat-cell>
-          </ng-container>
+            </div>
+          </div>
+        </div>
 
-          <ng-container matColumnDef="role">
-            <mat-header-cell *matHeaderCellDef>
-              <div class="header-cell">
-                <mat-icon>badge</mat-icon>
-                Role
-              </div>
-            </mat-header-cell>
-            <mat-cell *matCellDef="let user">
-              <span class="role-badge" [class.no-role]="!user.role">
-                {{ user.role_name }}
-              </span>
-            </mat-cell>
-          </ng-container>
+        <!-- List View (Table) -->
+        <div *ngIf="viewMode === 'list'" class="table-card">
+          <mat-table [dataSource]="users" class="modern-table">
+            <ng-container matColumnDef="id">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>tag</mat-icon>
+                  ID
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let user">
+                <span class="cell-badge">{{ user.id }}</span>
+              </mat-cell>
+            </ng-container>
 
-          <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-          <mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></mat-row>
-        </mat-table>
+            <ng-container matColumnDef="name">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>person</mat-icon>
+                  Name
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let user">
+                <div class="user-cell">
+                  <div class="user-avatar">{{ user.name?.charAt(0) || 'U' }}</div>
+                  <span class="user-name">{{ user.name }}</span>
+                </div>
+              </mat-cell>
+            </ng-container>
 
-        <mat-paginator
-          [length]="totalCount"
-          [pageSize]="pageSize"
-          [pageSizeOptions]="[5, 10, 20, 50]"
-          (page)="onPageChange($event)"
-          class="modern-paginator">
-        </mat-paginator>
+            <ng-container matColumnDef="email">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>email</mat-icon>
+                  Email
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let user">
+                <span class="email-text">{{ user.email }}</span>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="role">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>badge</mat-icon>
+                  Role
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let user">
+                <span class="role-badge" [class.no-role]="!user.role">
+                  {{ user.role_name }}
+                </span>
+              </mat-cell>
+            </ng-container>
+
+            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></mat-row>
+          </mat-table>
+        </div>
       </div>
+
+      <mat-paginator
+        *ngIf="!loading && users && users.length > 0"
+        [length]="totalCount"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[5, 10, 20, 50]"
+        (page)="onPageChange($event)"
+        class="modern-paginator">
+      </mat-paginator>
 
       <div *ngIf="!loading && users && users.length === 0" class="empty-state">
         <mat-icon class="empty-icon">inbox</mat-icon>
@@ -147,4 +180,4 @@
       </div>
     </div>
   </mat-sidenav-content>
-</mat-sidenav-container>  
+</mat-sidenav-container>

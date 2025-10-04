@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ApiService, Role, UsersResponse } from '../service/api.service';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
@@ -54,6 +54,7 @@ export class DashboardComponent implements OnInit {
   loading = false;
   errorMessage = '';
   roles: Role[] = [];
+  viewMode: 'grid' | 'list' = 'grid'; // Default to grid view
   filters = {
     name: '',
     email: '',
@@ -62,15 +63,10 @@ export class DashboardComponent implements OnInit {
 
   constructor(private apiService: ApiService, private snackBar: MatSnackBar) {}
 
-  @HostListener('window:resize', ['$event'])
-  onResize(event: Event) {
-    // No mobile handling since dashboard.html has fixed sidebar
-  }
-
   ngOnInit(): void {
     this.apiService.getRoles().subscribe({
       next: (response) => {
-        this.roles = response.data.filter(role => role.is_active); // Only active roles
+        this.roles = response.data.filter(role => role.is_active);
         this.fetchUsers();
       },
       error: (err) => {
@@ -118,5 +114,9 @@ export class DashboardComponent implements OnInit {
   applyFilters(): void {
     this.currentPage = 1;
     this.fetchUsers();
+  }
+
+  toggleViewMode(): void {
+    this.viewMode = this.viewMode === 'grid' ? 'list' : 'grid';
   }
 }
