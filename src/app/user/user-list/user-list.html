@@ -78,9 +78,22 @@
         <!-- Grid View -->
         <div *ngIf="viewMode === 'grid'" class="grid-card">
           <div class="user-grid">
-            <div *ngFor="let user of users" class="user-card" [routerLink]="['/bookings', user.id]">
+            <div
+              *ngFor="let user of users"
+              class="user-card"
+              [routerLink]="['/bookings', user.id]"
+              matTooltip="View user's bookings"
+              matTooltipPosition="above"
+              aria-label="View bookings for {{ user.name }}"
+              role="button"
+              (click)="onCardClick(user.id)"
+            >
+              <div *ngIf="loadingCard === user.id" class="loading-overlay">
+                <mat-spinner diameter="40"></mat-spinner>
+              </div>
               <div class="user-card-header">
                 <span class="user-name">{{ user.name }}</span>
+                <span class="role-badge" [class.no-role]="!user.role">{{ user.role_name }}</span>
               </div>
               <div class="user-card-content">
                 <div class="user-info">
@@ -91,9 +104,19 @@
                   <mat-icon>email</mat-icon>
                   <span class="email-text">{{ user.email }}</span>
                 </div>
-                <div class="user-info">
-                  <mat-icon>badge</mat-icon>
-                  <span class="role-badge" [class.no-role]="!user.role">{{ user.role_name }}</span>
+                <div class="user-card-footer">
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    class="view-bookings-btn"
+                    [routerLink]="['/bookings', user.id]"
+                    matTooltip="View user's bookings"
+                    matTooltipPosition="right"
+                    aria-label="View bookings for {{ user.name }}"
+                  >
+                    <mat-icon>event</mat-icon>
+                    View Bookings
+                  </button>
                 </div>
               </div>
             </div>
@@ -168,8 +191,8 @@
         [pageSize]="pageSize"
         [pageSizeOptions]="[5, 10, 20, 50]"
         (page)="onPageChange($event)"
-        class="modern-paginator">
-      </mat-paginator>
+        class="modern-paginator"
+      ></mat-paginator>
 
       <div *ngIf="!loading && users && users.length === 0" class="empty-state">
         <mat-icon class="empty-icon">inbox</mat-icon>

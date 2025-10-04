@@ -14,7 +14,8 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 interface User {
   id: number;
@@ -40,6 +41,7 @@ interface User {
     MatIconModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatTooltipModule,
     HeaderComponent,
     SidebarComponent,
     RouterModule
@@ -57,6 +59,7 @@ export class UserListComponent implements OnInit {
   errorMessage = '';
   roles: Role[] = [];
   viewMode: 'grid' | 'list' = 'grid';
+  loadingCard: number | null = null;
 
   filters = {
     name: '',
@@ -64,7 +67,11 @@ export class UserListComponent implements OnInit {
     role: undefined as number | undefined
   };
 
-  constructor(private apiService: ApiService, private snackBar: MatSnackBar) {}
+  constructor(
+    private apiService: ApiService,
+    private snackBar: MatSnackBar,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.apiService.getRoles().subscribe({
@@ -121,5 +128,13 @@ export class UserListComponent implements OnInit {
 
   toggleViewMode(): void {
     this.viewMode = this.viewMode === 'grid' ? 'list' : 'grid';
+  }
+
+  onCardClick(userId: number): void {
+    this.loadingCard = userId;
+    setTimeout(() => {
+      this.loadingCard = null;
+      this.router.navigate(['/bookings', userId]);
+    }, 500); // Simulate loading delay for UX feedback
   }
 }
