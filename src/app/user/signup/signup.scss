@@ -5,11 +5,14 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
   font-family: 'Inter', 'Segoe UI', sans-serif;
   position: relative;
   overflow: hidden;
-
+  .logo {
+      width: 300px;
+      filter: brightness(0) invert(1);
+    }
   &::before {
     content: '';
     position: absolute;

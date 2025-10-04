@@ -1,1 +1,285 @@
-<p>category works!</p>
+<mat-sidenav-container class="dashboard-container">
+  <mat-sidenav mode="side" opened class="modern-sidenav">
+    <div class="sidebar-header">
+      <div class="logo-container">
+        <div class="logo-icon">
+          <mat-icon>admin_panel_settings</mat-icon>
+        </div>
+        <span class="logo-text">Slotify</span>
+      </div>
+    </div>
+    <app-sidebar></app-sidebar>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <app-header></app-header>
+
+    <div class="content-wrapper">
+      <div class="page-header">
+        <div class="header-content">
+          <h1 class="page-title">
+            <mat-icon class="title-icon">category</mat-icon>
+            Category Management
+          </h1>
+          <p class="page-subtitle">Organize and manage your booking categories efficiently</p>
+        </div>
+        <div class="header-actions">
+          <button mat-raised-button color="primary" (click)="openCreateDialog()" class="create-btn">
+            <mat-icon>add</mat-icon>
+            Create Category
+          </button>
+          <button mat-icon-button (click)="toggleViewMode()" class="view-toggle-btn" title="Toggle View">
+            <mat-icon>{{ viewMode === 'grid' ? 'table_rows' : 'grid_view' }}</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="filters-card">
+        <div class="card-header">
+          <mat-icon>filter_list</mat-icon>
+          <h3>Filter Categories</h3>
+        </div>
+        <form class="filters-form" (ngSubmit)="applyFilters()">
+          <mat-form-field appearance="outline" class="modern-input">
+            <mat-label>Name</mat-label>
+            <input matInput [(ngModel)]="filters.name" name="name" placeholder="Search by name">
+            <mat-icon matPrefix>search</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="modern-input">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="filters.is_active" name="is_active">
+              <mat-option [value]="null">All</mat-option>
+              <mat-option [value]="true">Active</mat-option>
+              <mat-option [value]="false">Inactive</mat-option>
+            </mat-select>
+            <mat-icon matPrefix>filter_alt</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="modern-input">
+            <mat-label>From Date</mat-label>
+            <input matInput [matDatepicker]="fromPicker" [(ngModel)]="filters.from_date" name="from_date" placeholder="YYYY-MM-DD">
+            <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromPicker></mat-datepicker>
+            <mat-icon matPrefix>calendar_today</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="modern-input">
+            <mat-label>To Date</mat-label>
+            <input matInput [matDatepicker]="toPicker" [(ngModel)]="filters.to_date" name="to_date" placeholder="YYYY-MM-DD">
+            <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+            <mat-datepicker #toPicker></mat-datepicker>
+            <mat-icon matPrefix>calendar_today</mat-icon>
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" type="submit" class="apply-btn">
+            <mat-icon>search</mat-icon>
+            Apply Filters
+          </button>
+        </form>
+      </div>
+
+      <div *ngIf="loading" class="loading-state">
+        <mat-spinner diameter="60"></mat-spinner>
+        <p class="loading-text">Loading categories data...</p>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-card">
+        <mat-icon class="error-icon">error_outline</mat-icon>
+        <div class="error-content">
+          <h4>Error Loading Data</h4>
+          <p>{{ errorMessage }}</p>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && categories && categories.length > 0">
+        <!-- Grid View -->
+        <!-- Grid View -->
+<div *ngIf="viewMode === 'grid'" class="grid-card">
+  <div class="user-grid">
+    <div *ngFor="let category of categories" class="user-card">
+      <div class="user-card-header">
+        <span class="user-name">{{ category.name }}</span>
+        <span class="role-badge" [class.no-role]="!category.is_active">
+          {{ category.is_active ? 'Active' : 'Inactive' }}
+        </span>
+      </div>
+      <div class="user-card-content">
+        <div class="user-info">
+          <mat-icon>description</mat-icon>
+          <span>{{ category.description || '-' }}</span>
+        </div>
+        <div class="user-info">
+          <mat-icon>person</mat-icon>
+          <span>{{ category.created_by_name || '-' }}</span>
+        </div>
+        <div class="user-info">
+          <mat-icon>calendar_today</mat-icon>
+          <span>{{ category.created_at | date:'short' }}</span>
+        </div>
+      </div>
+      <div class="user-card-footer">
+        <button mat-raised-button color="primary" (click)="openEditDialog(category)" class="action-btn edit-btn">
+          <mat-icon>edit</mat-icon>
+          Edit
+        </button>
+        <button mat-raised-button color="warn" (click)="deleteCategory(category.id)" class="action-btn delete-btn" [disabled]="loading">
+          <mat-icon>delete</mat-icon>
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+        <!-- List View (Table) -->
+        <div *ngIf="viewMode === 'list'" class="table-card">
+          <mat-table [dataSource]="categories" class="modern-table">
+            <ng-container matColumnDef="name">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>category</mat-icon>
+                  Name
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let category">
+                <span class="user-name">{{ category.name }}</span>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="description">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>description</mat-icon>
+                  Description
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let category">
+                <span>{{ category.description || '-' }}</span>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="is_active">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>check_circle</mat-icon>
+                  Status
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let category">
+                <span class="role-badge" [class.no-role]="!category.is_active">
+                  {{ category.is_active ? 'Active' : 'Inactive' }}
+                </span>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="created_by_name">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>person</mat-icon>
+                  Created By
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let category">
+                <span>{{ category.created_by_name || '-' }}</span>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="created_at">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>calendar_today</mat-icon>
+                  Created At
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let category">
+                <span>{{ category.created_at | date:'short' }}</span>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>settings</mat-icon>
+                  Actions
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let category">
+                <button mat-icon-button (click)="openEditDialog(category)" title="Edit">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button (click)="deleteCategory(category.id)" title="Delete" [disabled]="loading">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </mat-cell>
+            </ng-container>
+
+            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></mat-row>
+          </mat-table>
+        </div>
+      </div>
+
+      <mat-paginator
+        *ngIf="!loading && categories && categories.length > 0"
+        [length]="totalCount"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[5, 10, 20, 50]"
+        (page)="onPageChange($event)"
+        class="modern-paginator">
+      </mat-paginator>
+
+      <div *ngIf="!loading && categories && categories.length === 0" class="empty-state">
+        <mat-icon class="empty-icon">inbox</mat-icon>
+        <h3>No Categories Found</h3>
+        <p>Try adjusting your filters or add a new category</p>
+      </div>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+<!-- Create/Edit Dialog (used as a template for MatDialog) -->
+<ng-template #categoryDialog let-data>
+  <h2 mat-dialog-title>{{ data.isEdit ? 'Edit Category' : 'Create Category' }}</h2>
+  <mat-dialog-content>
+    <form #categoryForm="ngForm" class="dialog-form">
+      <mat-form-field style="margin:1%" appearance="outline" class="full-width">
+        <mat-label>Name</mat-label>
+        <input
+          matInput
+          [(ngModel)]="data.category.name"
+          name="name"
+          required
+          placeholder="Enter category name"
+        >
+        <mat-error *ngIf="categoryForm.controls['name']?.errors?.['required']">
+          Name is required
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea
+          matInput
+          [(ngModel)]="data.category.description"
+          name="description"
+          placeholder="Enter description (optional)"
+        ></textarea>
+      </mat-form-field>
+      <mat-checkbox [(ngModel)]="data.category.is_active" name="is_active">
+        Active
+      </mat-checkbox>
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="closeDialog()">Cancel</button>
+    <button
+      mat-raised-button
+      color="primary"
+      [disabled]="categoryForm.invalid || dialogLoading"
+      (click)="saveCategory(data)"
+    >
+      <mat-spinner *ngIf="dialogLoading" diameter="20"></mat-spinner>
+      <span *ngIf="!dialogLoading">{{ data.isEdit ? 'Update' : 'Create' }}</span>
+    </button>
+  </mat-dialog-actions>
+</ng-template>

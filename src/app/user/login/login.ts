@@ -58,7 +58,7 @@ export class LoginComponent {
         this.apiService.handleLoginSuccess(response);
         this.snackBar.open(response.message, 'Close', { duration: 5000 });
         this.loading = false;
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/users']);
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Login failed. Please try again.';

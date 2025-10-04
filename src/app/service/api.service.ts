@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environments';
 
@@ -94,6 +95,74 @@ export interface Role {
   is_active: boolean;
 }
 
+export interface Category {
+  id: number;
+  name: string;
+  description: string | null;
+  is_active: boolean;
+  created_by_id: number | null;
+  created_by_name: string | null;
+  updated_by_id: number | null;
+  updated_by_name: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CategoryResponse {
+  message: string;
+  status: number;
+  data?: Category | Category[];
+  count?: number;
+  next?: string | null;
+  previous?: string | null;
+}
+
+export interface CategoryCreateRequest {
+  name: string;
+  description?: string;
+  is_active?: boolean;
+  created_by?: number;
+}
+
+export interface CategoryUpdateRequest {
+  name?: string;
+  description?: string;
+  is_active?: boolean;
+  updated_by?: number;
+}
+export interface Slot {
+  id: number;
+  category: {
+    id: number;
+    name: string;
+  };
+  start_time: string;
+  end_time: string;
+  is_active: boolean;
+}
+
+export interface SlotResponse {
+  message: string;
+  status: number;
+  data?: Slot | Slot[];
+  count?: number;
+  next?: string | null;
+  previous?: string | null;
+}
+
+export interface SlotCreateRequest {
+  category: number;
+  start_time: string;
+  end_time: string;
+  is_active?: boolean;
+}
+
+export interface SlotUpdateRequest {
+  category?: number;
+  start_time?: string;
+  end_time?: string;
+  is_active?: boolean;
+}
 @Injectable({
   providedIn: 'root'
 })
@@ -102,6 +171,37 @@ export class ApiService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.getAccessToken();
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      Authorization: token ? `Bearer ${token}` : ''
+    });
+  }
+
+  private handleUnauthorized(error: any): Observable<never> {
+    if (error.status === 401) {
+      const refreshToken = this.getRefreshToken();
+      if (refreshToken) {
+        return this.refreshToken(refreshToken).pipe(
+          switchMap((response: RefreshResponse) => {
+            this.setAccessToken(response.access);
+            return throwError(() => error); // Retry the original request after refreshing token
+          }),
+          catchError(() => {
+            this.logout();
+            return throwError(() => new Error('Session expired. Please log in again.'));
+          })
+        );
+      } else {
+        this.logout();
+        return throwError(() => new Error('Session expired. Please log in again.'));
+      }
+    }
+    return throwError(() => error);
+  }
+
+  // Existing methods
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.baseUrl}/login/`, credentials);
   }
@@ -141,19 +241,122 @@ export class ApiService {
       if (filters.role !== undefined) params = params.set('role', filters.role.toString());
     }
 
-    return this.http.get<UsersResponse>(`${this.baseUrl}/users/`, { params });
+    return this.http.get<UsersResponse>(`${this.baseUrl}/users/`, {
+      headers: this.getAuthHeaders(),
+      params
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
   }
 
   getRoles(): Observable<{ message: string; status: number; data: Role[] }> {
-    return this.http.get<{ message: string; status: number; data: Role[] }>(`${this.baseUrl}/role/`);
+    return this.http.get<{ message: string; status: number; data: Role[] }>(`${this.baseUrl}/role/`, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
   }
 
+  // Category API methods
+  createCategory(data: CategoryCreateRequest): Observable<CategoryResponse> {
+    return this.http.post<CategoryResponse>(`${this.baseUrl}/categories/`, data, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+
+  listCategories(page: number, pageSize: number, filters?: {
+    name?: string;
+    is_active?: boolean;
+    created_by?: number;
+    from_date?: string;
+    to_date?: string;
+  }): Observable<CategoryResponse> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('page_size', pageSize.toString());
+
+    if (filters) {
+      if (filters.name) params = params.set('name', filters.name);
+      if (filters.is_active !== undefined) params = params.set('is_active', filters.is_active.toString());
+      if (filters.created_by) params = params.set('created_by', filters.created_by.toString());
+      if (filters.from_date) params = params.set('from_date', filters.from_date);
+      if (filters.to_date) params = params.set('to_date', filters.to_date);
+    }
+
+    return this.http.get<CategoryResponse>(`${this.baseUrl}/categories/`, {
+      headers: this.getAuthHeaders(),
+      params
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+  
+
+  getCategory(id: number): Observable<CategoryResponse> {
+    return this.http.get<CategoryResponse>(`${this.baseUrl}/categories/${id}/`, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+
+  updateCategory(id: number, data: CategoryUpdateRequest): Observable<CategoryResponse> {
+    return this.http.put<CategoryResponse>(`${this.baseUrl}/categories/${id}/`, data, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+
+  deleteCategory(id: number): Observable<CategoryResponse> {
+    return this.http.delete<CategoryResponse>(`${this.baseUrl}/categories/${id}/`, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+
+  createSlot(data: SlotCreateRequest): Observable<SlotResponse> {
+    return this.http.post<SlotResponse>(`${this.baseUrl}/slots/`, data, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+
+  listSlots(page: number, pageSize: number, filters?: {
+    category?: number;
+    is_active?: boolean;
+  }): Observable<SlotResponse> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('page_size', pageSize.toString());
+
+    if (filters) {
+      if (filters.category) params = params.set('category', filters.category.toString());
+      if (filters.is_active !== undefined) params = params.set('is_active', filters.is_active.toString());
+    }
+
+    return this.http.get<SlotResponse>(`${this.baseUrl}/slots/`, {
+      headers: this.getAuthHeaders(),
+      params
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+
+  getSlot(id: number): Observable<SlotResponse> {
+    return this.http.get<SlotResponse>(`${this.baseUrl}/slots/${id}/`, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+
+  updateSlot(id: number, data: SlotUpdateRequest): Observable<SlotResponse> {
+    return this.http.put<SlotResponse>(`${this.baseUrl}/slots/${id}/`, data, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+
+  deleteSlot(id: number): Observable<SlotResponse> {
+    return this.http.delete<SlotResponse>(`${this.baseUrl}/slots/${id}/`, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+  // Existing utility methods
   get<T>(endpoint: string): Observable<T> {
-    return this.http.get<T>(`${this.baseUrl}${endpoint}`);
+    return this.http.get<T>(`${this.baseUrl}${endpoint}`, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
   }
 
   post<T>(endpoint: string, data: any): Observable<T> {
-    return this.http.post<T>(`${this.baseUrl}${endpoint}`, data);
+    return this.http.post<T>(`${this.baseUrl}${endpoint}`, data, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
   }
 
   setTokens(accessToken: string, refreshToken: string): void {
@@ -174,10 +377,10 @@ export class ApiService {
   }
 
   logout(): void {
-    localStorage.clear();
+    this.clearTokens();
     this.router.navigate(['/login']);
   }
-
+  
   clearTokens(): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');

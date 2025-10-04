@@ -61,11 +61,6 @@
     animation: fadeInUp 0.7s ease-out;
   }
 }
-.logo {
-      width: 100%;
-      // margin-bottom: 1rem;
-      // filter: brightness(0) invert(1);
-    }
 
 .content-wrapper {
   flex: 1;
@@ -105,19 +100,43 @@
     }
   }
 
-  .view-toggle-btn {
-    color: #667eea;
-    transition: all 0.3s ease;
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 
-    &:hover {
-      background: rgba(102, 126, 234, 0.1);
-      transform: scale(1.1);
+    .create-btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      font-weight: 600;
+      padding: 0 1.5rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      height: 48px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: linear-gradient(135deg, #5568d3, #6a3f8f);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
     }
 
-    mat-icon {
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
+    .view-toggle-btn {
+      color: #667eea;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(102, 126, 234, 0.1);
+        transform: scale(1.1);
+      }
+
+      mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
     }
   }
 }
@@ -321,20 +340,6 @@
       flex-wrap: wrap;
       gap: 0.5rem;
 
-      .user-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        font-weight: 600;
-        text-transform: uppercase;
-      }
-
       .user-name {
         font-weight: 600;
         font-size: 1.1rem;
@@ -381,12 +386,6 @@
           font-size: 20px;
           width: 20px;
           height: 20px;
-        }
-
-        .email-text {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
         }
 
         span {
@@ -455,162 +454,182 @@
   }
 }
 
-.table-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  overflow-x: auto;
+/* Dialog Styles */
+::ng-deep .mat-mdc-dialog-container {
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+  animation: fadeIn 0.3s ease-out;
+}
 
-  .modern-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  margin: -1rem -1rem 1rem;
 
-    mat-header-cell {
-      background: #f5f5f5;
-      font-weight: 600;
-      color: #1a1a2e;
-      padding: 1rem;
+  h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
 
-      .header-cell {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+  .close-btn {
+    color: white;
+    transition: all 0.3s ease;
 
-        mat-icon {
-          color: #667eea;
-        }
-      }
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
 
-    mat-cell {
-      padding: 1rem;
-      color: #1a1a2e;
-
-      .cell-badge {
-        background: rgba(102, 126, 234, 0.1);
-        color: #667eea;
-        padding: 0.25rem 0.75rem;
-        border-radius: 12px;
-        font-size: 0.875rem;
-      }
-
-      .user-cell {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-
-        .user-avatar {
-          width: 36px;
-          height: 36px;
-          background: linear-gradient(135deg, #667eea, #764ba2);
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          font-size: 1rem;
-          font-weight: 600;
-          text-transform: uppercase;
-        }
-
-        .user-name {
-          font-weight: 500;
-        }
-      }
-
-      .email-text {
-        color: #666;
-        font-size: 0.875rem;
-      }
-
-      .role-badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 12px;
-        font-size: 0.875rem;
-        background: rgba(102, 126, 234, 0.1);
-        color: #667eea;
-
-        &.no-role {
-          background: rgba(229, 62, 62, 0.1);
-          color: #e53e3e;
-        }
-      }
-    }
-
-    mat-row {
-      transition: background 0.3s ease;
-
-      &:hover {
-        background: rgba(102, 126, 234, 0.05);
-      }
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
     }
   }
 }
 
-.modern-paginator {
-  background: transparent;
-  margin-top: 1rem;
+.dialog-content {
+  padding: 1rem;
+  max-height: 60vh;
+  overflow-y: auto;
 
-  ::ng-deep {
-    .mat-mdc-paginator-container {
-      background: white;
-      border-radius: 8px;
-      padding: 0.5rem;
-    }
+  .dialog-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 
-    .mat-mdc-paginator-page-size-select {
-      .mat-mdc-select {
-        background: rgba(102, 126, 234, 0.03);
+    .full-width {
+      width: 100%;
+
+      ::ng-deep .mat-mdc-text-field-wrapper {
+        background: rgba(102, 126, 234, 0.05);
         border-radius: 8px;
       }
+
+      ::ng-deep .mdc-text-field--outlined:not(.mdc-text-field--disabled) {
+        .mdc-notched-outline__leading,
+        .mdc-notched-outline__notch,
+        .mdc-notched-outline__trailing {
+          border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        &:hover .mdc-notched-outline {
+          .mdc-notched-outline__leading,
+          .mdc-notched-outline__notch,
+          .mdc-notched-outline__trailing {
+            border-color: #667eea;
+          }
+        }
+
+        &.mdc-text-field--focused .mdc-notched-outline {
+          .mdc-notched-outline__leading,
+          .mdc-notched-outline__notch,
+          .mdc-notched-outline__trailing {
+            border-color: #667eea;
+            border-width: 2px;
+          }
+        }
+      }
+
+      mat-icon {
+        color: #667eea;
+        margin-right: 0.5rem;
+      }
     }
 
-    .mat-mdc-paginator-range-actions {
-      .mat-mdc-button {
-        color: #667eea;
+    .time-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
 
-        &:hover {
-          background: rgba(102, 126, 234, 0.1);
+      h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1a1a2e;
+        margin: 0.5rem 0;
+      }
+
+      .time-inputs {
+        display: flex;
+        gap: 0.75rem;
+
+        .time-field {
+          flex: 1;
+          min-width: 100px;
         }
+      }
+    }
+
+    mat-checkbox {
+      color: #667eea;
+
+      ::ng-deep .mdc-checkbox__native-control:checked ~ .mdc-checkbox__background {
+        background-color: #667eea;
+        border-color: #667eea;
+      }
+    }
+
+    .time-error {
+      color: #e53e3e;
+      font-size: 0.85rem;
+      margin-top: -0.5rem;
+    }
+  }
+}
+
+.dialog-actions {
+  padding: 1rem 1.5rem;
+  background: rgba(102, 126, 234, 0.05);
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+
+  .cancel-btn {
+    color: #666;
+    font-weight: 500;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(102, 126, 234, 0.1);
+      color: #1a1a2e;
+    }
+  }
+
+  .save-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    font-weight: 600;
+    padding: 0 1.5rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: linear-gradient(135deg, #5568d3, #6a3f8f);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    &[disabled] {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+
+    mat-spinner {
+      ::ng-deep circle {
+        stroke: white;
       }
     }
   }
 }
 
-.empty-state {
-  text-align: center;
-  padding: 2rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1.5rem;
-  animation: fadeInUp 0.7s ease-out;
-
-  .empty-icon {
-    color: #666;
-    font-size: 48px;
-    width: 48px;
-    height: 48px;
-    margin-bottom: 1rem;
-  }
-
-  h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1a1a2e;
-    margin: 0 0 0.5rem;
-  }
-
-  p {
-    font-size: 0.875rem;
-    color: #666;
-    margin: 0;
-  }
-}
-
-@keyframes fadeInUp {
+@keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -618,112 +637,5 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-10px); }
-  75% { transform: translateX(10px); }
-}
-
-@media (max-width: 960px) {
-  .dashboard-container {
-    mat-sidenav {
-      width: 200px;
-    }
-
-    mat-sidenav-content {
-      padding: 0;
-    }
-
-    .content-wrapper {
-      padding: 1rem;
-    }
-
-    .page-header {
-      flex-direction: column;
-      align-items: flex-start;
-      padding-top: 1.5rem;
-    }
-
-    .filters-form {
-      flex-direction: column;
-      gap: 0.75rem;
-
-      .modern-input {
-        min-width: 100%;
-      }
-
-      .apply-btn {
-        width: 100%;
-      }
-    }
-
-    .grid-card {
-      .user-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      }
-    }
-  }
-}
-
-@media (max-width: 600px) {
-  .dashboard-container {
-    mat-sidenav {
-      width: 180px;
-    }
-
-    .content-wrapper {
-      padding: 0.5rem;
-    }
-
-    .page-header {
-      padding-top: 1rem;
-
-      .header-content {
-        .page-title {
-          font-size: 1.5rem;
-        }
-
-        .page-subtitle {
-          font-size: 0.85rem;
-        }
-      }
-
-      .view-toggle-btn {
-        mat-icon {
-          font-size: 20px;
-          width: 20px;
-          height: 20px;
-        }
-      }
-    }
-
-    .filters-card,
-    .grid-card,
-    .table-card,
-    .loading-state,
-    .error-card,
-    .empty-state {
-      padding: 1rem;
-    }
-
-    .grid-card {
-      .user-grid {
-        grid-template-columns: 1fr;
-      }
-    }
   }
 }

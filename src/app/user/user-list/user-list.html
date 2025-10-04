@@ -1,1 +1,182 @@
-<p>user-list works!</p>
+<mat-sidenav-container class="dashboard-container">
+  <mat-sidenav mode="side" opened class="modern-sidenav">
+    <div class="sidebar-header">
+      <div class="logo-container">
+        <div class="logo-icon">
+          <mat-icon>admin_panel_settings</mat-icon>
+        </div>
+        <span class="logo-text">Slotify</span>
+      </div>
+    </div>
+    <app-sidebar></app-sidebar>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <app-header></app-header>
+    <div class="content-wrapper">
+      <div class="page-header">
+        <div class="header-content">
+          <h1 class="page-title">
+            <mat-icon class="title-icon">people</mat-icon>
+            Users Management
+          </h1>
+          <p class="page-subtitle">Manage and monitor all registered users</p>
+        </div>
+        <button mat-icon-button (click)="toggleViewMode()" class="view-toggle-btn" title="Toggle View">
+          <mat-icon>{{ viewMode === 'grid' ? 'table_rows' : 'grid_view' }}</mat-icon>
+        </button>
+      </div>
+
+      <div class="filters-card">
+        <div class="card-header">
+          <mat-icon>filter_list</mat-icon>
+          <h3>Filter Users</h3>
+        </div>
+        <form class="filters-form" (ngSubmit)="applyFilters()">
+          <mat-form-field appearance="outline" class="modern-input">
+            <mat-label>Name</mat-label>
+            <input matInput [(ngModel)]="filters.name" name="name" placeholder="Search by name">
+            <mat-icon matPrefix>person</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="modern-input">
+            <mat-label>Email</mat-label>
+            <input matInput [(ngModel)]="filters.email" name="email" placeholder="Search by email">
+            <mat-icon matPrefix>email</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="modern-input">
+            <mat-label>Role</mat-label>
+            <mat-select [(ngModel)]="filters.role" name="role" placeholder="Filter by role">
+              <mat-option [value]="undefined">All Roles</mat-option>
+              <mat-option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</mat-option>
+            </mat-select>
+            <mat-icon matPrefix>badge</mat-icon>
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" type="submit" class="apply-btn">
+            <mat-icon>search</mat-icon>
+            Apply Filters
+          </button>
+        </form>
+      </div>
+
+      <div *ngIf="loading" class="loading-state">
+        <mat-spinner diameter="60"></mat-spinner>
+        <p class="loading-text">Loading users data...</p>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-card">
+        <mat-icon class="error-icon">error_outline</mat-icon>
+        <div class="error-content">
+          <h4>Error Loading Data</h4>
+          <p>{{ errorMessage }}</p>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && users && users.length > 0">
+        <!-- Grid View -->
+        <div *ngIf="viewMode === 'grid'" class="grid-card">
+          <div class="user-grid">
+            <div *ngFor="let user of users" class="user-card">
+              <div class="user-card-header">
+                <!-- <div class="user-avatar">{{ user.name?.charAt(0) || 'U' }}</div> -->
+                <span class="user-name">{{ user.name }}</span>
+              </div>
+              <div class="user-card-content">
+                <div class="user-info">
+                  <mat-icon>tag</mat-icon>
+                  <span>ID: {{ user.id }}</span>
+                </div>
+                <div class="user-info">
+                  <mat-icon>email</mat-icon>
+                  <span class="email-text">{{ user.email }}</span>
+                </div>
+                <div class="user-info">
+                  <mat-icon>badge</mat-icon>
+                  <span class="role-badge" [class.no-role]="!user.role">{{ user.role_name }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- List View (Table) -->
+        <div *ngIf="viewMode === 'list'" class="table-card">
+          <mat-table [dataSource]="users" class="modern-table">
+            <ng-container matColumnDef="id">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>tag</mat-icon>
+                  ID
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let user">
+                <span class="cell-badge">{{ user.id }}</span>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="name">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>person</mat-icon>
+                  Name
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let user">
+                <div class="user-cell">
+                  <div class="user-avatar">{{ user.name?.charAt(0) || 'U' }}</div>
+                  <span class="user-name">{{ user.name }}</span>
+                </div>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="email">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>email</mat-icon>
+                  Email
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let user">
+                <span class="email-text">{{ user.email }}</span>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="role">
+              <mat-header-cell *matHeaderCellDef>
+                <div class="header-cell">
+                  <mat-icon>badge</mat-icon>
+                  Role
+                </div>
+              </mat-header-cell>
+              <mat-cell *matCellDef="let user">
+                <span class="role-badge" [class.no-role]="!user.role">
+                  {{ user.role_name }}
+                </span>
+              </mat-cell>
+            </ng-container>
+
+            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></mat-row>
+          </mat-table>
+        </div>
+      </div>
+
+      <mat-paginator
+        *ngIf="!loading && users && users.length > 0"
+        [length]="totalCount"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[5, 10, 20, 50]"
+        (page)="onPageChange($event)"
+        class="modern-paginator">
+      </mat-paginator>
+
+      <div *ngIf="!loading && users && users.length === 0" class="empty-state">
+        <mat-icon class="empty-icon">inbox</mat-icon>
+        <h3>No Users Found</h3>
+        <p>Try adjusting your filters or check back later</p>
+      </div>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

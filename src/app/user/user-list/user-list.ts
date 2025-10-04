@@ -1,11 +1,122 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ApiService, Role, UsersResponse } from '../../service/api.service';
+import { CommonModule } from '@angular/common';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { HeaderComponent } from '../../shared/header/header';
+import { SidebarComponent } from '../../shared/sidebar/sidebar';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: number | null;
+  role_name: string;
+}
 
 @Component({
-  selector: 'app-user-list',
-  imports: [],
+  selector: 'app-dashboard',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatSidenavModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule,
+    HeaderComponent,
+    SidebarComponent
+  ],
   templateUrl: './user-list.html',
-  styleUrl: './user-list.scss'
+  styleUrls: ['./user-list.scss']
 })
-export class UserList {
+export class UserListComponent implements OnInit {
+  users: User[] = [];
+  displayedColumns: string[] = ['id', 'name', 'email', 'role'];
+  totalCount = 0;
+  pageSize = 10;
+  currentPage = 1;
+  loading = false;
+  errorMessage = '';
+  roles: Role[] = [];
+  viewMode: 'grid' | 'list' = 'grid'; // Default to grid view
+  filters = {
+    name: '',
+    email: '',
+    role: undefined as number | undefined
+  };
 
+  constructor(private apiService: ApiService, private snackBar: MatSnackBar) {}
+
+  ngOnInit(): void {
+    this.apiService.getRoles().subscribe({
+      next: (response) => {
+        this.roles = response.data.filter(role => role.is_active);
+        this.fetchUsers();
+      },
+      error: (err) => {
+        this.errorMessage = 'Failed to fetch roles. Using default role names.';
+        this.snackBar.open(this.errorMessage, 'Close', { duration: 5000 });
+        this.fetchUsers();
+      }
+    });
+  }
+
+  fetchUsers(): void {
+    this.loading = true;
+    this.errorMessage = '';
+    this.apiService.getUsers(this.currentPage, this.pageSize, this.filters).subscribe({
+      next: (response: UsersResponse) => {
+        this.users = response.data.map(user => ({
+          ...user,
+          role_name: this.getRoleNameById(user.role)
+        }));
+        this.totalCount = response.count || 0;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.users = [];
+        this.totalCount = 0;
+        this.errorMessage = err.error?.message || 'Failed to fetch users. Please try again.';
+        this.snackBar.open(this.errorMessage, 'Close', { duration: 5000 });
+        this.loading = false;
+      }
+    });
+  }
+
+  getRoleNameById(roleId: number | null): string {
+    if (roleId === null) return 'Unassigned';
+    const role = this.roles.find(r => r.id === roleId);
+    return role ? role.name : 'Unknown';
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.currentPage = event.pageIndex + 1;
+    this.pageSize = event.pageSize;
+    this.fetchUsers();
+  }
+
+  applyFilters(): void {
+    this.currentPage = 1;
+    this.fetchUsers();
+  }
+
+  toggleViewMode(): void {
+    this.viewMode = this.viewMode === 'grid' ? 'list' : 'grid';
+  }
 }

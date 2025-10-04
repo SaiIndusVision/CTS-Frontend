@@ -1,9 +1,7 @@
 :host {
   display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
   font-family: 'Inter', 'Segoe UI', sans-serif;
   position: relative;
   overflow: hidden;
@@ -15,7 +13,7 @@
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
     background-size: 40px 40px;
     animation: gridMove 20s linear infinite;
     pointer-events: none;
@@ -28,11 +26,194 @@
 }
 
 .login-wrapper {
+  display: flex;
   width: 100%;
-  max-width: 440px;
-  padding: 2rem;
   position: relative;
   z-index: 1;
+}
+
+// Left Side - Features Section
+.features-section {
+  display: none;
+  width: 50%;
+  padding: 3rem;
+  color: white;
+  position: relative;
+
+  @media (min-width: 1024px) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .floating-icons {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+
+    mat-icon {
+      position: absolute;
+      opacity: 0.15;
+      animation: float 6s ease-in-out infinite;
+
+      &:nth-child(1) {
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+      }
+      &:nth-child(2) {
+        top: 30%;
+        right: 15%;
+        animation-delay: 2s;
+      }
+      &:nth-child(3) {
+        bottom: 20%;
+        left: 15%;
+        animation-delay: 4s;
+      }
+      &:nth-child(4) {
+        bottom: 40%;
+        right: 20%;
+        animation-delay: 1s;
+      }
+    }
+  }
+
+  .features-content {
+    position: relative;
+    z-index: 2;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .brand-header {
+    margin-bottom: 3rem;
+    animation: slideDown 0.8s ease-out;
+
+    .logo {
+      width: 300px;
+      margin-bottom: 1rem;
+      filter: brightness(0) invert(1);
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      margin: 1rem 0;
+      line-height: 1.2;
+
+      .highlight {
+        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+    }
+
+    p {
+      font-size: 1.125rem;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.6;
+    }
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+
+    .feature-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.5rem;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateX(10px);
+      }
+
+      .icon-wrapper {
+        flex-shrink: 0;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+
+        mat-icon {
+          color: #60a5fa;
+        }
+      }
+
+      .feature-text {
+        h3 {
+          font-size: 1.125rem;
+          font-weight: 600;
+          margin: 0 0 0.5rem;
+        }
+
+        p {
+          font-size: 0.875rem;
+          color: rgba(255, 255, 255, 0.7);
+          margin: 0;
+          line-height: 1.5;
+        }
+      }
+    }
+  }
+
+  .stats {
+    display: flex;
+    gap: 3rem;
+    animation: fadeIn 1s ease-out 0.6s both;
+
+    .stat-item {
+      .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #60a5fa;
+        margin-bottom: 0.25rem;
+      }
+
+      .stat-label {
+        font-size: 0.875rem;
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(5deg);
+  }
+}
+
+// Right Side - Login Form
+.login-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+
+  @media (min-width: 1024px) {
+    width: 50%;
+  }
 }
 
 .brand-section {
@@ -40,44 +221,28 @@
   margin-bottom: 2rem;
   animation: slideDown 0.6s ease-out;
 
-  .logo-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
+  @media (min-width: 1024px) {
+    display: none;
+  }
 
-    .logo-icon {
-      width: 48px;
-      height: 48px;
-      color: white;
-      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-    }
-
-    .brand-name {
-      font-size: 2.5rem;
-      font-weight: 800;
-      color: white;
-      margin: 0;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-      letter-spacing: -0.5px;
-    }
+  img {
+    width: 60%;
+    max-width: 300px;
+    margin: 0 auto;
   }
 
   .brand-tagline {
     color: rgba(255, 255, 255, 0.95);
     font-size: 1rem;
     font-weight: 400;
-    margin: 0;
+    margin: 1rem 0 0;
     letter-spacing: 0.5px;
   }
 }
 
-.login-container {
-  animation: fadeInUp 0.7s ease-out;
-}
-
 .login-card {
+  width: 100%;
+  max-width: 440px;
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   background: rgba(255, 255, 255, 0.98);
@@ -85,6 +250,7 @@
   padding: 2rem;
   border: 1px solid rgba(255, 255, 255, 0.3);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: fadeInUp 0.7s ease-out;
 
   &:hover {
     transform: translateY(-2px);
@@ -120,7 +286,7 @@ mat-card-title {
   margin-bottom: 1.25rem;
 
   .input-icon {
-    color: #667eea;
+    color: #3b82f6;
     margin-right: 0.5rem;
   }
 }
@@ -132,7 +298,7 @@ mat-form-field {
     }
 
     .mat-mdc-text-field-wrapper {
-      background: rgba(102, 126, 234, 0.03);
+      background: rgba(59, 130, 246, 0.03);
       border-radius: 12px;
     }
 
@@ -140,14 +306,14 @@ mat-form-field {
       .mdc-notched-outline__leading,
       .mdc-notched-outline__notch,
       .mdc-notched-outline__trailing {
-        border-color: rgba(102, 126, 234, 0.2);
+        border-color: rgba(59, 130, 246, 0.2);
       }
 
       &:hover .mdc-notched-outline {
         .mdc-notched-outline__leading,
         .mdc-notched-outline__notch,
         .mdc-notched-outline__trailing {
-          border-color: rgba(102, 126, 234, 0.4);
+          border-color: rgba(59, 130, 246, 0.4);
         }
       }
 
@@ -155,11 +321,21 @@ mat-form-field {
         .mdc-notched-outline__leading,
         .mdc-notched-outline__notch,
         .mdc-notched-outline__trailing {
-          border-color: #667eea;
+          border-color: #3b82f6;
           border-width: 2px;
         }
       }
     }
+  }
+}
+
+.toggle-icon {
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #3b82f6;
   }
 }
 
@@ -169,14 +345,14 @@ mat-form-field {
   margin-top: -0.5rem;
 
   a {
-    color: #667eea;
+    color: #3b82f6;
     text-decoration: none;
     font-size: 0.875rem;
     font-weight: 500;
     transition: color 0.2s ease;
 
     &:hover {
-      color: #764ba2;
+      color: #2563eb;
       text-decoration: underline;
     }
   }
@@ -185,14 +361,14 @@ mat-form-field {
 .login-button {
   width: 100%;
   padding: 0.875rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
   color: white !important;
   font-size: 1rem;
   font-weight: 600;
   border-radius: 12px;
   transition: all 0.3s ease;
   border: none;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   display: flex;
@@ -201,8 +377,8 @@ mat-form-field {
   gap: 0.5rem;
 
   &:hover:not([disabled]) {
-    background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%) !important;
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
     transform: translateY(-2px);
   }
 
@@ -270,49 +446,14 @@ mat-form-field {
   margin-top: 1rem;
 
   a {
-    color: #667eea;
+    color: #3b82f6;
     text-decoration: none;
     font-weight: 600;
     transition: color 0.2s ease;
 
     &:hover {
-      color: #764ba2;
+      color: #2563eb;
       text-decoration: underline;
-    }
-  }
-}
-
-.features {
-  display: flex;
-  justify-content: center;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-  flex-wrap: wrap;
-  animation: fadeIn 1s ease-out 0.3s both;
-
-  .feature-pill {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    color: #667eea;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
-
-    mat-icon {
-      font-size: 1rem;
-      width: 1rem;
-      height: 1rem;
-    }
-
-    &:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-      background: white;
     }
   }
 }
@@ -354,39 +495,26 @@ mat-form-field {
   75% { transform: translateX(10px); }
 }
 
-@media (max-width: 600px) {
-  .login-wrapper {
-    padding: 1rem;
-    max-width: 95%;
+@media (max-width: 1023px) {
+  :host {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  }
+
+  .login-container {
+    width: 100%;
   }
 
   .login-card {
     padding: 1.5rem;
   }
+}
 
-  .brand-section .logo-container {
-    .logo-icon {
-      width: 40px;
-      height: 40px;
-    }
-
-    .brand-name {
-      font-size: 2rem;
-    }
+@media (max-width: 600px) {
+  .login-container {
+    padding: 1rem;
   }
 
-  .features {
-    gap: 0.5rem;
-
-    .feature-pill {
-      padding: 0.4rem 0.75rem;
-      font-size: 0.75rem;
-
-      mat-icon {
-        font-size: 0.9rem;
-        width: 0.9rem;
-        height: 0.9rem;
-      }
-    }
+  .brand-section img {
+    width: 70%;
   }
 }
