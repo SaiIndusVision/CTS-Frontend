@@ -314,6 +314,7 @@ $primary-hover-gradient: linear-gradient(135deg, #5568d3, #6a3f8f);
 
   &.today {
     border: 2px solid #667eea;
+    height: 20rem;
 
     .day-header {
       background: $primary-gradient;
@@ -353,6 +354,7 @@ $primary-hover-gradient: linear-gradient(135deg, #5568d3, #6a3f8f);
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow-y: scroll;
 }
 
 .slot-card {
@@ -384,7 +386,7 @@ $primary-hover-gradient: linear-gradient(135deg, #5568d3, #6a3f8f);
 }
 
 .slot-category {
-  font-size: 1.4rem;
+  font-size: 1rem;
   color: #2c3e50;
   font-weight: 700;
 }

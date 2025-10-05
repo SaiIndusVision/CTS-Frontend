@@ -95,9 +95,7 @@
                       color="primary"
                       class="action-btn book-btn"
                       (click)="bookSlot(slot.id)"
-                      [disabled]="loading"
-                      matTooltip="Book this slot"
-                      matTooltipPosition="right"
+                      
                     >
                       Book Slot
                     </button>
@@ -107,9 +105,7 @@
                       color="warn"
                       class="action-btn cancel-btn"
                       (click)="cancelBooking(slot.id)"
-                      [disabled]="loading"
-                      matTooltip="Cancel booking"
-                      matTooltipPosition="right"
+                      
                     >
                       Cancel Booking
                     </button>

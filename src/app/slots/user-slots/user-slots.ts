@@ -1,3 +1,4 @@
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -129,6 +130,7 @@ export class UserSlotsComponent implements OnInit {
   }
 
   bookSlot(slotId: number): void {
+    console.log('slot id',slotId,'useid',this.userId);
     if (!this.userId) {
       this.snackBar.open('User not logged in', 'Close', { duration: 5000 });
       return;
