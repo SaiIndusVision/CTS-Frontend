@@ -37,7 +37,7 @@ export class LoginComponent {
   };
   errorMessage = '';
   loading = false;
-  showPassword = false; // Added for password visibility toggle
+  showPassword = false;
 
   constructor(
     private apiService: ApiService,
@@ -45,7 +45,7 @@ export class LoginComponent {
     private snackBar: MatSnackBar
   ) {}
 
-  togglePasswordVisibility(): void { // Added method for toggling password visibility
+  togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
 
@@ -58,7 +58,17 @@ export class LoginComponent {
         this.apiService.handleLoginSuccess(response);
         this.snackBar.open(response.message, 'Close', { duration: 5000 });
         this.loading = false;
-        this.router.navigate(['/users']);
+        // Redirect based on role
+        const role = response.data.role_name;
+        if (role === 'User') {
+          this.router.navigate(['/user-slot']);
+        } else if (role === 'Admin') {
+          this.router.navigate(['/dashboard']);
+        } else {
+          // Fallback in case role is not recognized
+          this.router.navigate(['/login']);
+          this.snackBar.open('Unknown role, redirecting to dashboard', 'Close', { duration: 5000 });
+        }
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Login failed. Please try again.';

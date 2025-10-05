@@ -1,33 +1,15 @@
 <div class="sidebar-container">
-  <!-- <div class="sidebar-header">
-    <div class="logo">
-      <mat-icon class="logo-icon">grid_view</mat-icon>
-      <span class="logo-text">Admin Panel</span>
-    </div>
-  </div> -->
-
   <mat-nav-list class="sidebar-nav">
-    <a mat-list-item routerLink="/dashboard" routerLinkActive="active" class="nav-item">
-      <!-- <mat-icon class="nav-icon">dashboard</mat-icon> -->
-      <span class="nav-text">Dashboard</span>
-      <div class="active-indicator"></div>
-    </a>
-
-    <a mat-list-item routerLink="/users" routerLinkActive="active" class="nav-item">
-      <!-- <mat-icon class="nav-icon">people</mat-icon> -->
-      <span class="nav-text">Users</span>
-      <div class="active-indicator"></div>
-    </a>
-
-    <a mat-list-item routerLink="/category" routerLinkActive="active" class="nav-item">
-      <!-- <mat-icon class="nav-icon">event</mat-icon> -->
-      <span class="nav-text">Category</span>
-      <div class="active-indicator"></div>
-    </a>
-
-    <a mat-list-item routerLink="/slots" routerLinkActive="active" class="nav-item">
-      <!-- <mat-icon class="nav-icon">event</mat-icon> -->
-      <span class="nav-text">Slots</span>
+    <a
+      *ngFor="let item of navItems"
+      mat-list-item
+      [routerLink]="item.route"
+      routerLinkActive="active"
+      class="nav-item"
+    >
+      <!-- Uncomment if you want icons back -->
+      <!-- <mat-icon class="nav-icon">{{ item.icon }}</mat-icon> -->
+      <span class="nav-text">{{ item.label }}</span>
       <div class="active-indicator"></div>
     </a>
 

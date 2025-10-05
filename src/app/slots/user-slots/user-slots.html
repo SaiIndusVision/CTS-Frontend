@@ -1,0 +1,139 @@
+<mat-sidenav-container class="dashboard-container">
+  <mat-sidenav mode="side" opened class="modern-sidenav">
+    <div class="sidebar-header">
+      <div class="logo-container">
+        <img src="https://res.cloudinary.com/dbm1vxr2h/image/upload/v1759568506/SlotifyLogo1_f0slsz.png" style="width: 100%; filter: brightness(0);" alt="Logo">
+      </div>
+    </div>
+    <app-sidebar></app-sidebar>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <app-header></app-header>
+    <div class="content-wrapper">
+      <div class="page-header">
+        <div class="header-content">
+          <h1 class="page-title">
+            <mat-icon class="title-icon">access_time</mat-icon>
+            Slots
+          </h1>
+          <p class="page-subtitle">Pick your slots efficiently and effortlessly</p>
+        </div>
+      </div>
+
+      <!-- User Preferences -->
+      <div class="filters-card">
+        <div class="card-header">
+          <mat-icon>filter_list</mat-icon>
+          <h3>User Preferences</h3>
+        </div>
+        <form class="filters-form" (ngSubmit)="applyFilters()">
+          <mat-form-field appearance="outline" class="modern-input">
+            <mat-label>Event Category</mat-label>
+            <mat-select [(ngModel)]="selectedCategory" name="category" (ngModelChange)="applyFilters()">
+              <mat-option [value]="null">All Categories</mat-option>
+              <mat-option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</mat-option>
+            </mat-select>
+            <mat-icon matPrefix>category</mat-icon>
+          </mat-form-field>
+          <button mat-raised-button color="primary" type="submit" class="apply-btn">
+            <mat-icon>search</mat-icon>
+            Apply Filter
+          </button>
+          <button mat-button class="reset-btn" (click)="resetFilters()">Reset</button>
+        </form>
+      </div>
+
+      <!-- Week Navigation -->
+      <div class="week-navigation">
+        <button mat-icon-button class="nav-btn" (click)="previousWeek()" aria-label="Previous week">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span class="week-display">{{ currentWeekStart | date:'MMMM d, yyyy' }} - {{ getWeekEnd() | date:'MMMM d, yyyy' }}</span>
+        <button mat-icon-button class="nav-btn" (click)="nextWeek()" aria-label="Next week">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-state">
+        <mat-spinner diameter="60"></mat-spinner>
+        <p class="loading-text">Loading slots...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="errorMessage" class="error-card">
+        <mat-icon class="error-icon">error_outline</mat-icon>
+        <div class="error-content">
+          <h4>Error Loading Data</h4>
+          <p>{{ errorMessage }}</p>
+        </div>
+      </div>
+
+      <!-- Calendar View -->
+      <div *ngIf="!loading && slots.length > 0" class="calendar-card">
+        <div class="calendar-grid">
+          <div *ngFor="let date of getWeekDates()" class="day-column" [class.today]="isToday(date)">
+            <div class="day-header">
+              <span class="day-name">{{ date | date:'EEE' }}</span>
+              <span class="day-date">{{ date | date:'MMM d' }}</span>
+            </div>
+            <div class="slots-container">
+              <div *ngFor="let slot of getSlotsForDate(date)" class="slot-card">
+                <div class="slot-content">
+                  <div class="slot-info">
+                    <span class="slot-category">{{ slot.category_name }}</span>
+                    <div class="times" style="display: flex;">
+                      <mat-icon class="time-icon" style="color: rgb(56, 56, 148);">access_time</mat-icon>
+                      <span class="slot-time">{{ slot.start_time | date:'shortTime' }} - {{ slot.end_time | date:'shortTime' }}</span>
+                    </div>
+                  </div>
+                  <div class="slot-actions">
+                    <button
+                      *ngIf="!isSlotBooked(slot.id) && slot.is_active"
+                      mat-raised-button
+                      color="primary"
+                      class="action-btn book-btn"
+                      (click)="bookSlot(slot.id)"
+                      [disabled]="loading"
+                      matTooltip="Book this slot"
+                      matTooltipPosition="right"
+                    >
+                      Book Slot
+                    </button>
+                    <button
+                      *ngIf="isBookedByCurrentUser(slot.id)"
+                      mat-raised-button
+                      color="warn"
+                      class="action-btn cancel-btn"
+                      (click)="cancelBooking(slot.id)"
+                      [disabled]="loading"
+                      matTooltip="Cancel booking"
+                      matTooltipPosition="right"
+                    >
+                      Cancel Booking
+                    </button>
+                    <span *ngIf="isSlotBooked(slot.id) && !isBookedByCurrentUser(slot.id)" class="booked-label">
+                      Slot Booked
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="getSlotsForDate(date).length === 0" class="no-slots">
+                <mat-icon>event_busy</mat-icon>
+                <span>No slots available</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading && slots.length === 0" class="empty-state">
+        <mat-icon class="empty-icon">inbox</mat-icon>
+        <h3>No Slots Available</h3>
+        <p>Try selecting a different category or changing the week</p>
+      </div>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -151,6 +151,7 @@ export interface SlotResponse {
   total_count?: number;
   next?: string | null;
   previous?: string | null;
+  
 }
 
 export interface SlotCreateRequest {
