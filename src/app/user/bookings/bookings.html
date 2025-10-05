@@ -31,19 +31,18 @@
           <h3>Filter Bookings</h3>
         </div>
         <form class="filters-form" (ngSubmit)="applyFilters()">
-          <mat-form-field appearance="outline" class="modern-input">
+          <!-- <mat-form-field appearance="outline" class="modern-input">
             <mat-label>Slot ID</mat-label>
             <input matInput [(ngModel)]="filters.slot_id" name="slot_id" placeholder="Search by slot ID" type="number">
             <mat-icon matPrefix>event</mat-icon>
-          </mat-form-field>
+          </mat-form-field> -->
 
           <mat-form-field appearance="outline" class="modern-input">
             <mat-label>Status</mat-label>
             <mat-select [(ngModel)]="filters.status" name="status" placeholder="Filter by status">
               <mat-option [value]="''">All Statuses</mat-option>
-              <mat-option value="confirmed">Confirmed</mat-option>
-              <mat-option value="pending">Pending</mat-option>
-              <mat-option value="cancelled">Cancelled</mat-option>
+              <mat-option value="booked">Booked</mat-option>
+              <mat-option value="notbooked">Not Booked</mat-option>
             </mat-select>
             <mat-icon matPrefix>filter_alt</mat-icon>
           </mat-form-field>
@@ -108,7 +107,7 @@
               <div class="booking-card-content">
                 <div class="booking-info">
                   <mat-icon>event</mat-icon>
-                  <span>Slot ID: {{ booking.slot }}</span>
+                  <span>Category: {{ booking.category_name }}</span>
                 </div>
                 <div class="booking-info">
                   <mat-icon>calendar_today</mat-icon>
@@ -146,7 +145,7 @@
                 </div>
               </mat-header-cell>
               <mat-cell *matCellDef="let booking">
-                <span>{{ booking.slot }}</span>
+                <span>{{ booking.category_name }}</span>
               </mat-cell>
             </ng-container>
 

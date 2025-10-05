@@ -1,7 +1,7 @@
 :host {
   display: flex;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  background: linear-gradient(135deg, #667eea, #764ba2);
   font-family: 'Inter', 'Segoe UI', sans-serif;
   position: relative;
   overflow: hidden;
@@ -104,9 +104,10 @@
       line-height: 1.2;
 
       .highlight {
-        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        // background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
         -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        // -webkit-text-fill-color: transparent;
+        color: white;
         background-clip: text;
       }
     }
@@ -182,7 +183,7 @@
       .stat-number {
         font-size: 2.5rem;
         font-weight: 800;
-        color: #60a5fa;
+        // color: #60a5fa;
         margin-bottom: 0.25rem;
       }
 
@@ -229,6 +230,7 @@
     width: 60%;
     max-width: 300px;
     margin: 0 auto;
+    filter: brightness(0) invert(1);
   }
 
   .brand-tagline {
@@ -497,7 +499,7 @@ mat-form-field {
 
 @media (max-width: 1023px) {
   :host {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    background: linear-gradient(135deg, #667eea, #764ba2);
   }
 
   .login-container {

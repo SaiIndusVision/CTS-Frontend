@@ -44,7 +44,7 @@ import { SidebarComponent } from '../../shared/sidebar/sidebar';
 })
 export class BookingsComponent implements OnInit {
   bookings: Booking[] = [];
-  displayedColumns: string[] = ['id', 'slot', 'status', 'created_at', 'updated_at'];
+  displayedColumns: string[] = ['id', 'slot', 'status', 'created_at', 'updated_at','category_name'];
   totalCount = 0;
   pageSize = 10;
   currentPage = 1;

@@ -151,7 +151,6 @@ export interface SlotResponse {
   total_count?: number;
   next?: string | null;
   previous?: string | null;
-  
 }
 
 export interface SlotCreateRequest {
@@ -174,6 +173,7 @@ export interface Booking {
   user: number;
   status: string;
   created_at: string;
+  category_name:string;
   updated_at: string;
 }
 
