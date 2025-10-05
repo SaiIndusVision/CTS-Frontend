@@ -130,22 +130,25 @@ export interface CategoryUpdateRequest {
   is_active?: boolean;
   updated_by?: number;
 }
+
 export interface Slot {
   id: number;
-  category: {
-    id: number;
-    name: string;
-  };
+  category_id: number;
+  category_name: string;
   start_time: string;
   end_time: string;
   is_active: boolean;
+  created_by_id: number | null;
+  created_by_name: string | null;
+  updated_by_id: number | null;
+  updated_by_name: string | null;
 }
 
 export interface SlotResponse {
   message: string;
   status: number;
   data?: Slot | Slot[];
-  count?: number;
+  total_count?: number;
   next?: string | null;
   previous?: string | null;
 }
@@ -163,6 +166,86 @@ export interface SlotUpdateRequest {
   end_time?: string;
   is_active?: boolean;
 }
+
+export interface Booking {
+  id: number;
+  slot: number;
+  user: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BookingResponse {
+  message: string;
+  status: number;
+  data?: Booking | Booking[];
+  count?: number;
+  next?: string | null;
+  previous?: string | null;
+}
+
+export interface BookingCreateRequest {
+  slot: number;
+  user: number;
+}
+
+export interface BookingUpdateRequest {
+  slot?: number;
+  status?: string;
+}
+
+export interface DashboardSummary {
+  total_categories: number;
+  active_categories: number;
+  inactive_categories: number;
+  total_slots: number;
+  active_slots: number;
+  inactive_slots: number;
+  total_bookings: number;
+  booked_slots: number;
+  cancelled_bookings: number;
+  total_users: number;
+}
+
+export interface RecentBooking {
+  id: number;
+  slot_id: number | null;
+  slot_time: string | null;
+  user_id: number | null;
+  user_name: string | null;
+  status: string;
+  created_at: string;
+}
+
+export interface RecentSlot {
+  id: number;
+  category_id: number | null;
+  category_name: string | null;
+  start_time: string;
+  end_time: string;
+  is_active: boolean;
+  created_by_id: number | null;
+  created_by_name: string | null;
+}
+
+export interface RecentCategory {
+  id: number;
+  name: string;
+  description: string;
+  is_active: boolean;
+  created_by_id: number | null;
+  created_by_name: string | null;
+  created_at: string;
+}
+
+export interface DashboardResponse {
+  summary: DashboardSummary;
+  recent_bookings: RecentBooking[];
+  recent_slots: RecentSlot[];
+  recent_categories: RecentCategory[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -186,7 +269,8 @@ export class ApiService {
         return this.refreshToken(refreshToken).pipe(
           switchMap((response: RefreshResponse) => {
             this.setAccessToken(response.access);
-            return throwError(() => error); // Retry the original request after refreshing token
+            // Note: Original request retry logic should be implemented here if needed
+            return throwError(() => error);
           }),
           catchError(() => {
             this.logout();
@@ -201,7 +285,6 @@ export class ApiService {
     return throwError(() => error);
   }
 
-  // Existing methods
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.baseUrl}/login/`, credentials);
   }
@@ -253,7 +336,6 @@ export class ApiService {
     }).pipe(catchError((err) => this.handleUnauthorized(err)));
   }
 
-  // Category API methods
   createCategory(data: CategoryCreateRequest): Observable<CategoryResponse> {
     return this.http.post<CategoryResponse>(`${this.baseUrl}/categories/`, data, {
       headers: this.getAuthHeaders()
@@ -284,7 +366,6 @@ export class ApiService {
       params
     }).pipe(catchError((err) => this.handleUnauthorized(err)));
   }
-  
 
   getCategory(id: number): Observable<CategoryResponse> {
     return this.http.get<CategoryResponse>(`${this.baseUrl}/categories/${id}/`, {
@@ -346,7 +427,62 @@ export class ApiService {
       headers: this.getAuthHeaders()
     }).pipe(catchError((err) => this.handleUnauthorized(err)));
   }
-  // Existing utility methods
+
+  listBookings(page: number, pageSize: number, filters?: {
+    slot_id?: number;
+    user_id?: number;
+    status?: string;
+    from_date?: string;
+    to_date?: string;
+  }): Observable<BookingResponse> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('page_size', pageSize.toString());
+
+    if (filters) {
+      if (filters.slot_id) params = params.set('slot_id', filters.slot_id.toString());
+      if (filters.user_id) params = params.set('user_id', filters.user_id.toString());
+      if (filters.status) params = params.set('status', filters.status);
+      if (filters.from_date) params = params.set('from_date', filters.from_date);
+      if (filters.to_date) params = params.set('to_date', filters.to_date);
+    }
+
+    return this.http.get<BookingResponse>(`${this.baseUrl}/bookings/`, {
+      headers: this.getAuthHeaders(),
+      params
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+
+  getBooking(id: number): Observable<BookingResponse> {
+    return this.http.get<BookingResponse>(`${this.baseUrl}/bookings/${id}/`, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+
+  createBooking(data: BookingCreateRequest): Observable<BookingResponse> {
+    return this.http.post<BookingResponse>(`${this.baseUrl}/bookings/`, data, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+
+  updateBooking(id: number, data: BookingUpdateRequest): Observable<BookingResponse> {
+    return this.http.put<BookingResponse>(`${this.baseUrl}/bookings/${id}/`, data, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+
+  deleteBooking(id: number): Observable<BookingResponse> {
+    return this.http.delete<BookingResponse>(`${this.baseUrl}/bookings/${id}/`, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+
+  getDashboard(): Observable<DashboardResponse> {
+    return this.http.get<DashboardResponse>(`${this.baseUrl}/dashboard/`, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError((err) => this.handleUnauthorized(err)));
+  }
+
   get<T>(endpoint: string): Observable<T> {
     return this.http.get<T>(`${this.baseUrl}${endpoint}`, {
       headers: this.getAuthHeaders()
@@ -380,7 +516,7 @@ export class ApiService {
     this.clearTokens();
     this.router.navigate(['/login']);
   }
-  
+
   clearTokens(): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');

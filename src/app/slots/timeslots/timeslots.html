@@ -85,7 +85,7 @@
           <div class="user-grid">
             <div *ngFor="let slot of slots" class="user-card">
               <div class="user-card-header">
-                <span class="user-name">{{ slot.category.name }}</span>
+                <span class="user-name">{{ slot.category_name }}</span>
                 <span class="role-badge" [class.no-role]="!slot.is_active">{{ slot.is_active ? 'Active' : 'Inactive' }}</span>
               </div>
               <div class="user-card-content">
@@ -123,7 +123,7 @@
                 </div>
               </mat-header-cell>
               <mat-cell *matCellDef="let slot">
-                <span class="user-name">{{ slot.category.name }}</span>
+                <span class="user-name">{{ slot.category_name }}</span>
               </mat-cell>
             </ng-container>
 
@@ -218,11 +218,11 @@
     <form #slotForm="ngForm" class="dialog-form" (ngSubmit)="saveSlot(data)">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Category</mat-label>
-        <mat-select [(ngModel)]="data.slot.category" name="category" required>
+        <mat-select [(ngModel)]="data.slot.category_id" name="category_id" required>
           <mat-option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</mat-option>
         </mat-select>
         <mat-icon matPrefix>category</mat-icon>
-        <mat-error *ngIf="slotForm.controls['category']?.errors?.['required']">
+        <mat-error *ngIf="slotForm.controls['category_id']?.errors?.['required']">
           Category is required
         </mat-error>
       </mat-form-field>

@@ -495,9 +495,9 @@
 }
 
 .dialog-content {
-  padding: 1rem;
-  max-height: 60vh;
-  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
 
   .dialog-form {
     display: flex;

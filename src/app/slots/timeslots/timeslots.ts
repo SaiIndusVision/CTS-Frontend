@@ -107,7 +107,7 @@ export class TimeslotsComponent implements OnInit {
       next: (response: SlotResponse) => {
         console.log('Slots response:', response);
         this.slots = Array.isArray(response.data) ? response.data : [];
-        this.totalCount = response.count || 0;
+        this.totalCount = response.total_count || 0;
         this.loading = false;
       },
       error: (err) => {
@@ -142,7 +142,7 @@ export class TimeslotsComponent implements OnInit {
       data: {
         isEdit: false,
         slot: {
-          category: this.categories.length > 0 ? this.categories[0].id : null,
+          category_id: this.categories.length > 0 ? this.categories[0].id : null,
           start_date: new Date(),
           start_hour: '09',
           start_minute: '00',
@@ -154,7 +154,7 @@ export class TimeslotsComponent implements OnInit {
           is_active: true
         }
       },
-      width: '450px'
+      width: '500px'
     });
   }
 
@@ -170,7 +170,7 @@ export class TimeslotsComponent implements OnInit {
               isEdit: true,
               slot: {
                 id: response.data.id,
-                category: response.data.category.id,
+                category_id: response.data.category_id,
                 start_date: startDate,
                 start_hour: startDate.getHours().toString().padStart(2, '0'),
                 start_minute: startDate.getMinutes().toString().padStart(2, '0'),
@@ -182,7 +182,7 @@ export class TimeslotsComponent implements OnInit {
                 is_active: response.data.is_active
               }
             },
-            width: '450px'
+            width: '500px'
           });
         }
       },
@@ -231,7 +231,7 @@ export class TimeslotsComponent implements OnInit {
   saveSlot(data: { isEdit: boolean; slot: any }) {
     this.dialogLoading = true;
 
-    if (!data.slot.category || !data.slot.start_time || !data.slot.end_time) {
+    if (!data.slot.category_id || !data.slot.start_time || !data.slot.end_time) {
       this.snackBar.open('Please fill all required fields', 'Close', {
         duration: 4000,
         panelClass: ['bg-red-600', 'text-white']
@@ -251,7 +251,7 @@ export class TimeslotsComponent implements OnInit {
 
     if (data.isEdit) {
       const updateData: SlotUpdateRequest = {
-        category: data.slot.category,
+        category: data.slot.category_id,
         start_time: data.slot.start_time,
         end_time: data.slot.end_time,
         is_active: data.slot.is_active
@@ -278,7 +278,7 @@ export class TimeslotsComponent implements OnInit {
       });
     } else {
       const createData: SlotCreateRequest = {
-        category: data.slot.category,
+        category: data.slot.category_id,
         start_time: data.slot.start_time,
         end_time: data.slot.end_time,
         is_active: data.slot.is_active ?? true

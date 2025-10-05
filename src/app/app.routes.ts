@@ -8,6 +8,7 @@ import { authGuard } from './auth-guard';
 import { UserListComponent } from './user/user-list/user-list';
 import { CategoryComponent } from './slots/category/category';
 import { TimeslotsComponent } from './slots/timeslots/timeslots';
+import { BookingsComponent } from './user/bookings/bookings';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -15,6 +16,7 @@ export const routes: Routes = [
   { path: 'signup', component: SignUpComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
+  { path: 'bookings/:userId', component: BookingsComponent, canActivate: [authGuard] },
   { path: 'users', component: UserListComponent, canActivate: [authGuard] },
   { path: 'slots', component: TimeslotsComponent, canActivate: [authGuard] },
   { path: 'category', component: CategoryComponent, canActivate: [authGuard] },

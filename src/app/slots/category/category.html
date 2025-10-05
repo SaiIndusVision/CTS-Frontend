@@ -28,7 +28,12 @@
             <mat-icon>add</mat-icon>
             Create Category
           </button>
-          <button mat-icon-button (click)="toggleViewMode()" class="view-toggle-btn" title="Toggle View">
+          <button
+            mat-icon-button
+            (click)="toggleViewMode()"
+            class="view-toggle-btn"
+            title="Toggle View"
+          >
             <mat-icon>{{ viewMode === 'grid' ? 'table_rows' : 'grid_view' }}</mat-icon>
           </button>
         </div>
@@ -42,7 +47,7 @@
         <form class="filters-form" (ngSubmit)="applyFilters()">
           <mat-form-field appearance="outline" class="modern-input">
             <mat-label>Name</mat-label>
-            <input matInput [(ngModel)]="filters.name" name="name" placeholder="Search by name">
+            <input matInput [(ngModel)]="filters.name" name="name" placeholder="Search by name" />
             <mat-icon matPrefix>search</mat-icon>
           </mat-form-field>
 
@@ -58,7 +63,13 @@
 
           <mat-form-field appearance="outline" class="modern-input">
             <mat-label>From Date</mat-label>
-            <input matInput [matDatepicker]="fromPicker" [(ngModel)]="filters.from_date" name="from_date" placeholder="YYYY-MM-DD">
+            <input
+              matInput
+              [matDatepicker]="fromPicker"
+              [(ngModel)]="filters.from_date"
+              name="from_date"
+              placeholder="YYYY-MM-DD"
+            />
             <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
             <mat-datepicker #fromPicker></mat-datepicker>
             <mat-icon matPrefix>calendar_today</mat-icon>
@@ -66,7 +77,13 @@
 
           <mat-form-field appearance="outline" class="modern-input">
             <mat-label>To Date</mat-label>
-            <input matInput [matDatepicker]="toPicker" [(ngModel)]="filters.to_date" name="to_date" placeholder="YYYY-MM-DD">
+            <input
+              matInput
+              [matDatepicker]="toPicker"
+              [(ngModel)]="filters.to_date"
+              name="to_date"
+              placeholder="YYYY-MM-DD"
+            />
             <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
             <mat-datepicker #toPicker></mat-datepicker>
             <mat-icon matPrefix>calendar_today</mat-icon>
@@ -95,42 +112,53 @@
       <div *ngIf="!loading && categories && categories.length > 0">
         <!-- Grid View -->
         <!-- Grid View -->
-<div *ngIf="viewMode === 'grid'" class="grid-card">
-  <div class="user-grid">
-    <div *ngFor="let category of categories" class="user-card">
-      <div class="user-card-header">
-        <span class="user-name">{{ category.name }}</span>
-        <span class="role-badge" [class.no-role]="!category.is_active">
-          {{ category.is_active ? 'Active' : 'Inactive' }}
-        </span>
-      </div>
-      <div class="user-card-content">
-        <div class="user-info">
-          <mat-icon>description</mat-icon>
-          <span>{{ category.description || '-' }}</span>
+        <div *ngIf="viewMode === 'grid'" class="grid-card">
+          <div class="user-grid">
+            <div *ngFor="let category of categories" class="user-card">
+              <div class="user-card-header">
+                <span class="user-name">{{ category.name }}</span>
+                <span class="role-badge" [class.no-role]="!category.is_active">
+                  {{ category.is_active ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+              <div class="user-card-content">
+                <div class="user-info">
+                  <mat-icon>description</mat-icon>
+                  <span>{{ category.description || '-' }}</span>
+                </div>
+                <div class="user-info">
+                  <mat-icon>person</mat-icon>
+                  <span>{{ category.created_by_name || '-' }}</span>
+                </div>
+                <div class="user-info">
+                  <mat-icon>calendar_today</mat-icon>
+                  <span>{{ category.created_at | date : 'short' }}</span>
+                </div>
+              </div>
+              <div class="user-card-footer">
+                <button
+                  mat-raised-button
+                  color="primary"
+                  (click)="openEditDialog(category)"
+                  class="action-btn edit-btn"
+                >
+                  <mat-icon>edit</mat-icon>
+                  Edit
+                </button>
+                <button
+                  mat-raised-button
+                  color="warn"
+                  (click)="deleteCategory(category.id)"
+                  class="action-btn delete-btn"
+                  [disabled]="loading"
+                >
+                  <mat-icon>delete</mat-icon>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="user-info">
-          <mat-icon>person</mat-icon>
-          <span>{{ category.created_by_name || '-' }}</span>
-        </div>
-        <div class="user-info">
-          <mat-icon>calendar_today</mat-icon>
-          <span>{{ category.created_at | date:'short' }}</span>
-        </div>
-      </div>
-      <div class="user-card-footer">
-        <button mat-raised-button color="primary" (click)="openEditDialog(category)" class="action-btn edit-btn">
-          <mat-icon>edit</mat-icon>
-          Edit
-        </button>
-        <button mat-raised-button color="warn" (click)="deleteCategory(category.id)" class="action-btn delete-btn" [disabled]="loading">
-          <mat-icon>delete</mat-icon>
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
         <!-- List View (Table) -->
         <div *ngIf="viewMode === 'list'" class="table-card">
@@ -193,7 +221,7 @@
                 </div>
               </mat-header-cell>
               <mat-cell *matCellDef="let category">
-                <span>{{ category.created_at | date:'short' }}</span>
+                <span>{{ category.created_at | date : 'short' }}</span>
               </mat-cell>
             </ng-container>
 
@@ -208,14 +236,19 @@
                 <button mat-icon-button (click)="openEditDialog(category)" title="Edit">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button (click)="deleteCategory(category.id)" title="Delete" [disabled]="loading">
+                <button
+                  mat-icon-button
+                  (click)="deleteCategory(category.id)"
+                  title="Delete"
+                  [disabled]="loading"
+                >
                   <mat-icon>delete</mat-icon>
                 </button>
               </mat-cell>
             </ng-container>
 
             <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-            <mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></mat-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns" class="data-row"></mat-row>
           </mat-table>
         </div>
       </div>
@@ -226,7 +259,8 @@
         [pageSize]="pageSize"
         [pageSizeOptions]="[5, 10, 20, 50]"
         (page)="onPageChange($event)"
-        class="modern-paginator">
+        class="modern-paginator"
+      >
       </mat-paginator>
 
       <div *ngIf="!loading && categories && categories.length === 0" class="empty-state">
@@ -243,7 +277,7 @@
   <h2 mat-dialog-title>{{ data.isEdit ? 'Edit Category' : 'Create Category' }}</h2>
   <mat-dialog-content>
     <form #categoryForm="ngForm" class="dialog-form">
-      <mat-form-field style="margin:1%" appearance="outline" class="full-width">
+      <mat-form-field style="margin: 1%" appearance="outline" class="full-width">
         <mat-label>Name</mat-label>
         <input
           matInput
@@ -251,7 +285,7 @@
           name="name"
           required
           placeholder="Enter category name"
-        >
+        />
         <mat-error *ngIf="categoryForm.controls['name']?.errors?.['required']">
           Name is required
         </mat-error>
@@ -265,9 +299,7 @@
           placeholder="Enter description (optional)"
         ></textarea>
       </mat-form-field>
-      <mat-checkbox [(ngModel)]="data.category.is_active" name="is_active">
-        Active
-      </mat-checkbox>
+      <mat-checkbox [(ngModel)]="data.category.is_active" name="is_active"> Active </mat-checkbox>
     </form>
   </mat-dialog-content>
   <mat-dialog-actions align="end">

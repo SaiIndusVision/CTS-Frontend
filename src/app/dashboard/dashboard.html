@@ -15,168 +15,310 @@
     <app-header></app-header>
 
     <div class="content-wrapper">
-      <div class="page-header">
-        <div class="header-content">
-          <h1 class="page-title">
-            <mat-icon class="title-icon">people</mat-icon>
-            Users Management
-          </h1>
-          <p class="page-subtitle">Manage and monitor all registered users</p>
-        </div>
-        <button mat-icon-button (click)="toggleViewMode()" class="view-toggle-btn" title="Toggle View">
-          <mat-icon>{{ viewMode === 'grid' ? 'table_rows' : 'grid_view' }}</mat-icon>
-        </button>
-      </div>
-
-      <div class="filters-card">
-        <div class="card-header">
-          <mat-icon>filter_list</mat-icon>
-          <h3>Filter Users</h3>
-        </div>
-        <form class="filters-form" (ngSubmit)="applyFilters()">
-          <mat-form-field appearance="outline" class="modern-input">
-            <mat-label>Name</mat-label>
-            <input matInput [(ngModel)]="filters.name" name="name" placeholder="Search by name">
-            <mat-icon matPrefix>person</mat-icon>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="modern-input">
-            <mat-label>Email</mat-label>
-            <input matInput [(ngModel)]="filters.email" name="email" placeholder="Search by email">
-            <mat-icon matPrefix>email</mat-icon>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="modern-input">
-            <mat-label>Role</mat-label>
-            <mat-select [(ngModel)]="filters.role" name="role" placeholder="Filter by role">
-              <mat-option [value]="undefined">All Roles</mat-option>
-              <mat-option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</mat-option>
-            </mat-select>
-            <mat-icon matPrefix>badge</mat-icon>
-          </mat-form-field>
-
-          <button mat-raised-button color="primary" type="submit" class="apply-btn">
-            <mat-icon>search</mat-icon>
-            Apply Filters
-          </button>
-        </form>
-      </div>
-
+      <!-- Loading State -->
       <div *ngIf="loading" class="loading-state">
-        <mat-spinner diameter="60"></mat-spinner>
-        <p class="loading-text">Loading users data...</p>
-      </div>
-
-      <div *ngIf="errorMessage" class="error-card">
-        <mat-icon class="error-icon">error_outline</mat-icon>
-        <div class="error-content">
-          <h4>Error Loading Data</h4>
-          <p>{{ errorMessage }}</p>
+        <div class="loading-content">
+          <mat-spinner diameter="60"></mat-spinner>
+          <p class="loading-text">Loading your dashboard...</p>
         </div>
       </div>
 
-      <div *ngIf="!loading && users && users.length > 0">
-        <!-- Grid View -->
-        <div *ngIf="viewMode === 'grid'" class="grid-card">
-          <div class="user-grid">
-            <div *ngFor="let user of users" class="user-card">
-              <div class="user-card-header">
-                <!-- <div class="user-avatar">{{ user.name?.charAt(0) || 'U' }}</div> -->
-                <span class="user-name">{{ user.name }}</span>
-              </div>
-              <div class="user-card-content">
-                <div class="user-info">
-                  <mat-icon>tag</mat-icon>
-                  <span>ID: {{ user.id }}</span>
-                </div>
-                <div class="user-info">
-                  <mat-icon>email</mat-icon>
-                  <span class="email-text">{{ user.email }}</span>
-                </div>
-                <div class="user-info">
-                  <mat-icon>badge</mat-icon>
-                  <span class="role-badge" [class.no-role]="!user.role">{{ user.role_name }}</span>
-                </div>
-              </div>
-            </div>
+      <!-- Error State -->
+      <div *ngIf="errorMessage && !loading" class="error-state">
+        <mat-card class="error-card">
+          <div class="error-icon-wrapper">
+            <mat-icon class="error-icon">error_outline</mat-icon>
+          </div>
+          <h3>Oops! Something went wrong</h3>
+          <p>{{ errorMessage }}</p>
+          <button mat-raised-button color="primary" (click)="fetchDashboardData()" class="retry-btn">
+            <mat-icon>refresh</mat-icon>
+            Try Again
+          </button>
+        </mat-card>
+      </div>
+
+      <!-- Dashboard Content -->
+      <div *ngIf="!loading && !errorMessage && dashboardData" class="dashboard-content">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+          <div class="welcome-content">
+            <h1 class="welcome-title">Welcome Back! 👋</h1>
+            <p class="welcome-subtitle">Here's what's happening with your platform today</p>
+          </div>
+          <div class="quick-actions">
+            <button mat-raised-button color="primary" routerLink="/category">
+              <mat-icon>add</mat-icon>
+              New Category
+            </button>
+            <button mat-raised-button routerLink="/slots">
+              <mat-icon>schedule</mat-icon>
+              Create Slot
+            </button>
           </div>
         </div>
 
-        <!-- List View (Table) -->
-        <div *ngIf="viewMode === 'list'" class="table-card">
-          <mat-table [dataSource]="users" class="modern-table">
-            <ng-container matColumnDef="id">
-              <mat-header-cell *matHeaderCellDef>
-                <div class="header-cell">
-                  <mat-icon>tag</mat-icon>
-                  ID
-                </div>
-              </mat-header-cell>
-              <mat-cell *matCellDef="let user">
-                <span class="cell-badge">{{ user.id }}</span>
-              </mat-cell>
-            </ng-container>
+        <!-- Stats Overview -->
+        <div class="stats-section">
+          <div class="section-header">
+            <h2 class="section-title">Platform Overview</h2>
+            <p class="section-subtitle">Real-time statistics and metrics</p>
+          </div>
 
-            <ng-container matColumnDef="name">
-              <mat-header-cell *matHeaderCellDef>
-                <div class="header-cell">
-                  <mat-icon>person</mat-icon>
-                  Name
-                </div>
-              </mat-header-cell>
-              <mat-cell *matCellDef="let user">
-                <div class="user-cell">
-                  <div class="user-avatar">{{ user.name?.charAt(0) || 'U' }}</div>
-                  <span class="user-name">{{ user.name }}</span>
-                </div>
-              </mat-cell>
-            </ng-container>
-
-            <ng-container matColumnDef="email">
-              <mat-header-cell *matHeaderCellDef>
-                <div class="header-cell">
-                  <mat-icon>email</mat-icon>
-                  Email
-                </div>
-              </mat-header-cell>
-              <mat-cell *matCellDef="let user">
-                <span class="email-text">{{ user.email }}</span>
-              </mat-cell>
-            </ng-container>
-
-            <ng-container matColumnDef="role">
-              <mat-header-cell *matHeaderCellDef>
-                <div class="header-cell">
-                  <mat-icon>badge</mat-icon>
-                  Role
-                </div>
-              </mat-header-cell>
-              <mat-cell *matCellDef="let user">
-                <span class="role-badge" [class.no-role]="!user.role">
-                  {{ user.role_name }}
-                </span>
-              </mat-cell>
-            </ng-container>
-
-            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-            <mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></mat-row>
-          </mat-table>
+          <div class="stats-grid">
+            <!-- Categories Card -->
+            <mat-card class="stat-card card-purple" routerLink="/category">
+      <div class="stat-card-content">
+        <div class="stat-icon-wrapper purple">
+          <mat-icon>category</mat-icon>
+        </div>
+        <div class="stat-details">
+          <div class="stat-label">Categories</div>
+          <div class="stat-value">{{ dashboardData.summary.total_categories || 0 }}</div>
+          <div class="stat-meta">
+            <span class="meta-badge success">{{ dashboardData.summary.active_categories || 0 }} Active</span>
+            <span class="meta-badge inactive" *ngIf="dashboardData.summary.inactive_categories > 0">{{ dashboardData.summary.inactive_categories }} Inactive</span>
+          </div>
         </div>
       </div>
+      <div class="stat-card-footer">
+        <span>Manage categories</span>
+        <mat-icon>arrow_forward</mat-icon>
+      </div>
+    </mat-card>
 
-      <mat-paginator
-        *ngIf="!loading && users && users.length > 0"
-        [length]="totalCount"
-        [pageSize]="pageSize"
-        [pageSizeOptions]="[5, 10, 20, 50]"
-        (page)="onPageChange($event)"
-        class="modern-paginator">
-      </mat-paginator>
+            <!-- Slots Card -->
+            <mat-card class="stat-card card-blue" routerLink="/slots">
+              <div class="stat-card-content">
+                <div class="stat-icon-wrapper blue">
+                  <mat-icon>access_time</mat-icon>
+                </div>
+                <div class="stat-details">
+                  <div class="stat-label">Time Slots</div>
+                  <div class="stat-value">{{ dashboardData.summary.total_slots || 0 }}</div>
+                  <div class="stat-meta">
+                    <span class="meta-badge success">{{ dashboardData.summary.active_slots || 0 }} Active</span>
+                    <span class="meta-badge inactive" *ngIf="dashboardData.summary.inactive_slots > 0">{{ dashboardData.summary.inactive_slots }} Inactive</span>
+                  </div>
+                </div>
+              </div>
+              <div class="stat-card-footer">
+                <span>View all slots</span>
+                <mat-icon>arrow_forward</mat-icon>
+              </div>
+            </mat-card>
 
-      <div *ngIf="!loading && users && users.length === 0" class="empty-state">
-        <mat-icon class="empty-icon">inbox</mat-icon>
-        <h3>No Users Found</h3>
-        <p>Try adjusting your filters or check back later</p>
+            <!-- Bookings Card -->
+            <mat-card class="stat-card card-green" >
+              <div class="stat-card-content">
+                <div class="stat-icon-wrapper green">
+                  <mat-icon>event_available</mat-icon>
+                </div>
+                <div class="stat-details">
+                  <div class="stat-label">Bookings</div>
+                  <div class="stat-value">{{ dashboardData.summary.total_bookings || 0 }}</div>
+                  <div class="stat-meta">
+                    <span class="meta-badge success">{{ dashboardData.summary.booked_slots || 0 }} Confirmed</span>
+                    <span class="meta-badge warning" *ngIf="dashboardData.summary.cancelled_bookings > 0">{{ dashboardData.summary.cancelled_bookings }} Cancelled</span>
+                  </div>
+                </div>
+              </div>
+              <div class="stat-card-footer">
+                <span>To view bookings go to User Page</span>
+                <!-- <mat-icon>arrow_forward</mat-icon> -->
+              </div>
+            </mat-card>
+
+            <!-- Users Card -->
+            <mat-card class="stat-card card-orange" routerLink="/users">
+              <div class="stat-card-content">
+                <div class="stat-icon-wrapper orange">
+                  <mat-icon>people</mat-icon>
+                </div>
+                <div class="stat-details">
+                  <div class="stat-label">Total Users</div>
+                  <div class="stat-value">{{ dashboardData.summary.total_users || 0 }}</div>
+                  <div class="stat-meta">
+                    <span class="meta-badge info">Platform Members</span>
+                  </div>
+                </div>
+              </div>
+              <div class="stat-card-footer">
+                <span>Manage users</span>
+                <mat-icon>arrow_forward</mat-icon>
+              </div>
+            </mat-card>
+          </div>
+        </div>
+
+        <!-- Activity Section -->
+        <div class="activity-section">
+          <div class="section-header">
+            <h2 class="section-title">Recent Activity</h2>
+            <p class="section-subtitle">Latest updates and recent changes</p>
+          </div>
+
+          <div class="activity-grid">
+            <!-- Recent Bookings -->
+            <mat-card class="activity-card">
+              <mat-card-header>
+                <div class="card-header-content">
+                  <div class="header-icon-wrapper booking">
+                    <mat-icon>event</mat-icon>
+                  </div>
+                  <div class="header-text">
+                    <mat-card-title>Recent Bookings</mat-card-title>
+                    <mat-card-subtitle>Latest booking activity</mat-card-subtitle>
+                  </div>
+                  <div class="header-badge">
+                    <span class="count-badge">{{ dashboardData.recent_bookings.length || 0 }}</span>
+                  </div>
+                </div>
+              </mat-card-header>
+              <mat-card-content>
+                <div *ngIf="hasRecentBookings(); else noBookings" class="activity-list">
+                  <div *ngFor="let booking of dashboardData.recent_bookings" class="activity-item">
+                    <div class="activity-icon">
+                      <mat-icon>person</mat-icon>
+                    </div>
+                    <div class="activity-details">
+                      <div class="activity-title">{{ booking.user_name }}</div>
+                      <div class="activity-description">Slot #{{ booking.slot_id }} • {{ booking.slot_time }}</div>
+                      <div class="activity-time">
+                        <mat-icon class="time-icon">schedule</mat-icon>
+                        {{ booking.created_at | date:'MMM d, y, h:mm a' }}
+                      </div>
+                    </div>
+                    <div class="activity-status">
+                      <span class="status-badge" [ngClass]="booking.status">
+                        {{ booking.status | titlecase }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <ng-template #noBookings>
+                  <div class="empty-state">
+                    <div class="empty-icon-wrapper">
+                      <mat-icon>event_busy</mat-icon>
+                    </div>
+                    <p class="empty-title">No Bookings Yet</p>
+                    <span class="empty-subtitle">Bookings will appear here once users start making reservations</span>
+                  </div>
+                </ng-template>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Recent Slots -->
+            <mat-card class="activity-card">
+              <mat-card-header>
+                <div class="card-header-content">
+                  <div class="header-icon-wrapper slot">
+                    <mat-icon>schedule</mat-icon>
+                  </div>
+                  <div class="header-text">
+                    <mat-card-title>Recent Slots</mat-card-title>
+                    <mat-card-subtitle>Newly created time slots</mat-card-subtitle>
+                  </div>
+                  <div class="header-badge">
+                    <span class="count-badge">{{ dashboardData.recent_slots.length || 0 }}</span>
+                  </div>
+                </div>
+              </mat-card-header>
+              <mat-card-content>
+                <div *ngIf="hasRecentSlots(); else noSlots" class="activity-list">
+                  <div *ngFor="let slot of dashboardData.recent_slots" class="activity-item">
+                    <div class="activity-icon slot-icon">
+                      <mat-icon>access_time</mat-icon>
+                    </div>
+                    <div class="activity-details">
+                      <div class="activity-title">{{ slot.category_name }}</div>
+                      <div class="activity-description">
+                        <mat-icon class="inline-icon">event</mat-icon>
+                        {{ slot.start_time | date:'MMM d, y' }}
+                      </div>
+                      <div class="activity-time">
+                        <mat-icon class="time-icon">schedule</mat-icon>
+                        {{ slot.start_time | date:'h:mm a' }} - {{ slot.end_time | date:'h:mm a' }}
+                      </div>
+                    </div>
+                    <div class="activity-status">
+                      <span class="status-badge" [class.active]="slot.is_active" [class.inactive]="!slot.is_active">
+                        {{ slot.is_active ? 'Active' : 'Inactive' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <ng-template #noSlots>
+                  <div class="empty-state">
+                    <div class="empty-icon-wrapper">
+                      <mat-icon>schedule</mat-icon>
+                    </div>
+                    <p class="empty-title">No Slots Created</p>
+                    <span class="empty-subtitle">Create time slots to start accepting bookings</span>
+                    <button mat-raised-button color="primary" routerLink="/slots" class="empty-action-btn">
+                      <mat-icon>add</mat-icon>
+                      Create First Slot
+                    </button>
+                  </div>
+                </ng-template>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Recent Categories -->
+            <mat-card class="activity-card full-width">
+              <mat-card-header>
+                <div class="card-header-content">
+                  <div class="header-icon-wrapper category">
+                    <mat-icon>category</mat-icon>
+                  </div>
+                  <div class="header-text">
+                    <mat-card-title>Recent Categories</mat-card-title>
+                    <mat-card-subtitle>Newly added categories</mat-card-subtitle>
+                  </div>
+                  <div class="header-badge">
+                   <span class="count-badge">{{ dashboardData.recent_bookings.length || 0 }}</span>
+
+                  </div>
+                </div>
+              </mat-card-header>
+              <mat-card-content>
+                <div *ngIf="hasRecentCategories(); else noCategories" class="activity-list">
+                  <div *ngFor="let category of dashboardData.recent_categories" class="activity-item">
+                    <div class="activity-icon category-icon">
+                      <mat-icon>label</mat-icon>
+                    </div>
+                    <div class="activity-details">
+                      <div class="activity-title">{{ category.name }}</div>
+                      <div class="activity-description">{{ category.description || 'No description provided' }}</div>
+                      <div class="activity-time">
+                        <mat-icon class="time-icon">person</mat-icon>
+                        Created by {{ category.created_by_name }} on {{ category.created_at | date:'MMM d, y, h:mm a' }}
+                      </div>
+                    </div>
+                    <div class="activity-status">
+                      <span class="status-badge" [class.active]="category.is_active" [class.inactive]="!category.is_active">
+                        {{ category.is_active ? 'Active' : 'Inactive' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <ng-template #noCategories>
+                  <div class="empty-state">
+                    <div class="empty-icon-wrapper">
+                      <mat-icon>category</mat-icon>
+                    </div>
+                    <p class="empty-title">No Categories Yet</p>
+                    <span class="empty-subtitle">Create categories to organize your time slots effectively</span>
+                    <button mat-raised-button color="primary" routerLink="/categories" class="empty-action-btn">
+                      <mat-icon>add</mat-icon>
+                      Create First Category
+                    </button>
+                  </div>
+                </ng-template>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
       </div>
     </div>
   </mat-sidenav-content>
