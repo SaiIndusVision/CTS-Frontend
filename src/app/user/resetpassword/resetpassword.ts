@@ -32,11 +32,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 })
 export class ResetPasswordComponent implements OnInit {
   resetPasswordData: ResetPasswordRequest = {
-    user_id: 0, // Initialize user_id
     token: '',
     new_password: '',
     confirm_password: ''
   };
+  userId: string | null = null;
   errorMessage = '';
   loading = false;
   showPassword = false;
@@ -53,33 +53,40 @@ export class ResetPasswordComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       const token = params['token'];
-      const userId = params['user_id'];
+      this.userId = params['user_id'];
 
-      if (token && userId) {
+      if (token && this.userId) {
         this.loading = true;
         const validateRequest: ValidateResetTokenRequest = { token };
         this.apiService.validateResetToken(validateRequest).subscribe({
           next: (response: ValidateResetTokenResponse) => {
-            if (response.status === 200 && response.data.user_id.toString() === userId) {
+            console.log('Validate token response:', response); // Debug log
+            if (response.status === 200) {
               this.isTokenValid = true;
               this.resetPasswordData.token = token;
-              this.resetPasswordData.user_id = +userId; // Convert string to number
+              console.log('Token validated successfully, userId:', this.userId); // Debug log
             } else {
+              this.isTokenValid = false;
               this.errorMessage = response.message || 'Invalid or expired token';
-              this.snackBar.open(this.errorMessage, 'Close', { duration: 5000 });
+              console.error('Token validation failed:', this.errorMessage, 'Response data:', response.data); // Debug log
+              this.snackBar.open(this.errorMessage, 'Close', { duration: 5000, panelClass: ['bg-red-600', 'text-white'] });
             }
             this.loading = false;
           },
           error: (err) => {
+            this.isTokenValid = false;
             this.errorMessage = err.error?.message || 'Failed to validate token';
-            this.snackBar.open(this.errorMessage, 'Close', { duration: 5000 });
+            console.error('Validate token error:', err); // Debug log
+            this.snackBar.open(this.errorMessage, 'Close', { duration: 5000, panelClass: ['bg-red-600', 'text-white'] });
             this.loading = false;
           },
           complete: () => (this.loading = false)
         });
       } else {
-        this.errorMessage = 'Invalid reset link';
-        this.snackBar.open(this.errorMessage, 'Close', { duration: 5000 });
+        this.isTokenValid = false;
+        this.errorMessage = 'Invalid reset link: Missing token or user ID';
+        console.error('Missing query params:', { token, userId: this.userId }); // Debug log
+        this.snackBar.open(this.errorMessage, 'Close', { duration: 5000, panelClass: ['bg-red-600', 'text-white'] });
       }
     });
   }
@@ -92,40 +99,56 @@ export class ResetPasswordComponent implements OnInit {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
 
-  validatePassword(): boolean {
-    if (this.resetPasswordData.new_password.length < 8) {
-      this.errorMessage = 'Password must be at least 8 characters long';
-      return false;
-    }
-    if (this.resetPasswordData.new_password !== this.resetPasswordData.confirm_password) {
-      this.errorMessage = 'Passwords do not match';
-      return false;
-    }
-    return true;
+  validatePassword(): string | null {
+  // Updated regex: at least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+
+  if (!this.resetPasswordData.new_password) {
+    return 'New password is required';
   }
+  if (!passwordRegex.test(this.resetPasswordData.new_password)) {
+    return 'Password must be at least 8 characters long, with at least one uppercase letter, one lowercase letter, one number, and one special character';
+  }
+  if (!this.resetPasswordData.confirm_password) {
+    return 'Confirm password is required';
+  }
+  if (this.resetPasswordData.new_password !== this.resetPasswordData.confirm_password) {
+    return 'Passwords do not match';
+  }
+  return null;
+}
+passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+
 
   onSubmit(): void {
     if (!this.isTokenValid) {
-      this.snackBar.open('Cannot reset password: Invalid or expired token', 'Close', { duration: 5000 });
+      this.snackBar.open('Cannot reset password: Invalid or expired token', 'Close', { duration: 5000, panelClass: ['bg-red-600', 'text-white'] });
       return;
     }
-    if (!this.validatePassword()) {
-      this.snackBar.open(this.errorMessage, 'Close', { duration: 5000 });
+    if (!this.userId) {
+      this.snackBar.open('User ID is missing', 'Close', { duration: 5000, panelClass: ['bg-red-600', 'text-white'] });
+      return;
+    }
+    const validationError = this.validatePassword();
+    if (validationError) {
+      this.errorMessage = validationError;
+      this.snackBar.open(this.errorMessage, 'Close', { duration: 5000, panelClass: ['bg-red-600', 'text-white'] });
       return;
     }
 
     this.loading = true;
     this.errorMessage = '';
 
-    this.apiService.resetPassword(this.resetPasswordData).subscribe({
+    this.apiService.resetPassword(this.userId, this.resetPasswordData).subscribe({
       next: (response: ResetPasswordResponse) => {
-        this.snackBar.open(response.message, 'Close', { duration: 5000 });
+        this.snackBar.open(response.message, 'Close', { duration: 5000, panelClass: ['bg-green-600', 'text-white'] });
         this.loading = false;
         this.router.navigate(['/login']);
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Password reset failed. Please try again.';
-        this.snackBar.open(this.errorMessage, 'Close', { duration: 5000 });
+        console.error('Reset password error:', err); // Debug log
+        this.snackBar.open(this.errorMessage, 'Close', { duration: 5000, panelClass: ['bg-red-600', 'text-white'] });
         this.loading = false;
       },
       complete: () => (this.loading = false)

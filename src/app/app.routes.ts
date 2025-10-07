@@ -22,6 +22,10 @@ export const routes: Routes = [
   { path: 'slots', component: TimeslotsComponent, canActivate: [authGuard] },
   { path: 'category', component: CategoryComponent, canActivate: [authGuard] },
   { path: 'user-slot', component: UserSlotsComponent, canActivate: [authGuard] },
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: '**', redirectTo: '/login' }
+
+  // Redirect empty path based on role via guard
+  { path: '', canActivate: [authGuard], component: DashboardComponent }, // will redirect in guard
+
+  // Optional: 404 page
+  { path: '**', canActivate: [authGuard], component: DashboardComponent } // or a 404 component
 ];

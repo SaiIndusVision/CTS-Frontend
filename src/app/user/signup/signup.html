@@ -2,11 +2,11 @@
   <div class="signup-container">
     <!-- Brand Section -->
     <div class="brand-section">
-      <img 
-          src="https://res.cloudinary.com/dbm1vxr2h/image/upload/v1759568506/SlotifyLogo1_f0slsz.png" 
-          alt="Slotify Logo" 
-          class="logo"
-        />
+      <img
+        src="https://res.cloudinary.com/dbm1vxr2h/image/upload/v1759568506/SlotifyLogo1_f0slsz.png"
+        alt="Slotify Logo"
+        class="logo"
+      />
       <p class="brand-tagline">Create your account</p>
     </div>
 
@@ -27,9 +27,10 @@
               name="name"
               required
               placeholder="Your full name"
+              #name="ngModel"
             />
             <mat-icon matPrefix class="input-icon">person</mat-icon>
-            <mat-error *ngIf="signupForm.controls['name']?.errors?.['required']">
+            <mat-error *ngIf="name.errors?.['required'] && name.touched">
               Name is required
             </mat-error>
           </mat-form-field>
@@ -43,10 +44,15 @@
               name="email"
               required
               placeholder="you@example.com"
+              #email="ngModel"
+              pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
             />
             <mat-icon matPrefix class="input-icon">mail</mat-icon>
-            <mat-error *ngIf="signupForm.controls['email']?.errors?.['required']">
+            <mat-error *ngIf="email.errors?.['required'] && email.touched">
               Email is required
+            </mat-error>
+            <mat-error *ngIf="email.errors?.['pattern'] && email.touched">
+              Please enter a valid email address
             </mat-error>
           </mat-form-field>
 
@@ -59,13 +65,19 @@
               name="password"
               required
               placeholder="Enter your password"
+              #password="ngModel"
+              pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{8,}"
             />
             <mat-icon matPrefix class="input-icon">lock</mat-icon>
             <mat-icon matSuffix class="toggle-icon" (click)="togglePasswordVisibility()">
               {{ showPassword ? 'visibility_off' : 'visibility' }}
             </mat-icon>
-            <mat-error *ngIf="signupForm.controls['password']?.errors?.['required']">
+            <mat-error *ngIf="password.errors?.['required'] && password.touched">
               Password is required
+            </mat-error>
+            <mat-error *ngIf="password.errors?.['pattern'] && password.touched">
+              Password must be at least 8 characters, with 1 uppercase, 1 lowercase, 1 number, and 1
+              special character
             </mat-error>
           </mat-form-field>
 
@@ -78,13 +90,19 @@
               name="confirm_password"
               required
               placeholder="Confirm your password"
+              #confirmPassword="ngModel"
             />
             <mat-icon matPrefix class="input-icon">lock</mat-icon>
             <mat-icon matSuffix class="toggle-icon" (click)="toggleConfirmPasswordVisibility()">
               {{ showConfirmPassword ? 'visibility_off' : 'visibility' }}
             </mat-icon>
-            <mat-error *ngIf="signupForm.controls['confirm_password']?.errors?.['required']">
+            <mat-error *ngIf="confirmPassword.errors?.['required'] && confirmPassword.touched">
               Confirm Password is required
+            </mat-error>
+            <mat-error
+              *ngIf="signupData.password !== signupData.confirm_password && confirmPassword.touched"
+            >
+              Passwords do not match
             </mat-error>
           </mat-form-field>
 
@@ -105,9 +123,7 @@
           </p>
         </form>
 
-        <p class="login-link">
-          Already have an account? <a routerLink="/login">Sign In</a>
-        </p>
+        <p class="login-link">Already have an account? <a routerLink="/login">Sign In</a></p>
       </mat-card-content>
     </mat-card>
   </div>

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { ApiService, LoginRequest, LoginResponse } from '../../service/api.service';
+import { ApiService, LoginRequest, LoginResponse, DecryptedLoginData } from '../../service/api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -55,11 +55,18 @@ export class LoginComponent {
 
     this.apiService.login(this.loginData).subscribe({
       next: (response: LoginResponse) => {
+        if ('data' in response.data) {
+          this.errorMessage = 'Response data not decrypted';
+          this.snackBar.open(this.errorMessage, 'Close', { duration: 5000 });
+          this.loading = false;
+          return;
+        }
+        const data = response.data as DecryptedLoginData;
         this.apiService.handleLoginSuccess(response);
         this.snackBar.open(response.message, 'Close', { duration: 5000 });
         this.loading = false;
         // Redirect based on role
-        const role = response.data.role_name;
+        const role = data.role_name;
         if (role === 'User') {
           this.router.navigate(['/user-slot']);
         } else if (role === 'Admin') {
@@ -67,7 +74,7 @@ export class LoginComponent {
         } else {
           // Fallback in case role is not recognized
           this.router.navigate(['/login']);
-          this.snackBar.open('Unknown role, redirecting to dashboard', 'Close', { duration: 5000 });
+          this.snackBar.open('Unknown role, redirecting to login', 'Close', { duration: 5000 });
         }
       },
       error: (err) => {

@@ -1,27 +1,34 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environments';
+import * as CryptoJS from 'crypto-js';
 
+// AES Key (hardcoded for this example; use environment variables in production)
+const AES_KEY = CryptoJS.enc.Hex.parse('03C597A3660D50B59332AE1603A94AC2');
+
+// Interfaces
 export interface LoginRequest {
   email: string;
   password: string;
 }
 
+export interface DecryptedLoginData {
+  user_id: number;
+  name: string;
+  email: string;
+  role_id?: number;
+  role_name?: string;
+  access_token: string;
+  refresh_token: string;
+}
+
 export interface LoginResponse {
   message: string;
   status: number;
-  data: {
-    user_id: number;
-    name: string;
-    email: string;
-    role_id?: number;
-    role_name?: string;
-    access_token: string;
-    refresh_token: string;
-  };
+  data: { data: string; iv?: string } | DecryptedLoginData;
 }
 
 export interface ForgotPasswordRequest {
@@ -31,6 +38,10 @@ export interface ForgotPasswordRequest {
 export interface ForgotPasswordResponse {
   message: string;
   status: number;
+  data?: {
+    user_id: string;
+    token: string;
+  };
 }
 
 export interface SignUpRequest {
@@ -53,14 +64,10 @@ export interface ValidateResetTokenRequest {
 export interface ValidateResetTokenResponse {
   message: string;
   status: number;
-  data: {
-    user_id: number;
-    token: string;
-  };
+  data?: any;
 }
 
 export interface ResetPasswordRequest {
-  user_id: number;
   token: string;
   new_password: string;
   confirm_password: string;
@@ -173,7 +180,7 @@ export interface Booking {
   user: number;
   status: string;
   created_at: string;
-  category_name:string;
+  category_name: string;
   updated_at: string;
 }
 
@@ -270,7 +277,6 @@ export class ApiService {
         return this.refreshToken(refreshToken).pipe(
           switchMap((response: RefreshResponse) => {
             this.setAccessToken(response.access);
-            // Note: Original request retry logic should be implemented here if needed
             return throwError(() => error);
           }),
           catchError(() => {
@@ -286,28 +292,214 @@ export class ApiService {
     return throwError(() => error);
   }
 
-  login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.baseUrl}/login/`, credentials);
+  // Convert URL-safe Base64 to standard Base64
+  private urlSafeToStandardBase64(urlSafe: string): string {
+    // Replace URL-safe characters with standard Base64 characters
+    let standard = urlSafe.replace(/-/g, '+').replace(/_/g, '/');
+    // Add padding if needed
+    const padding = (4 - (standard.length % 4)) % 4;
+    standard += '='.repeat(padding);
+    return standard;
   }
 
-  forgotPassword(data: ForgotPasswordRequest): Observable<ForgotPasswordResponse> {
-    return this.http.post<ForgotPasswordResponse>(`${this.baseUrl}/reset_password/`, data);
+  // Convert standard Base64 to URL-safe Base64
+  private standardToUrlSafeBase64(standard: string): string {
+    return standard.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   }
 
+  // AES Encryption - outputs URL-safe Base64
+  private encryptAES(plaintext: string): string {
+    try {
+      const cipher = CryptoJS.AES.encrypt(plaintext, AES_KEY, {
+        mode: CryptoJS.mode.ECB,
+        padding: CryptoJS.pad.Pkcs7
+      });
+      // Get standard base64 and convert to URL-safe
+      const standardBase64 = cipher.toString();
+      const urlSafeBase64 = this.standardToUrlSafeBase64(standardBase64);
+      console.log('Encrypted data (URL-safe):', urlSafeBase64);
+      return urlSafeBase64;
+    } catch (e) {
+      console.error('Encryption error:', e);
+      throw new Error('Failed to encrypt data');
+    }
+  }
+
+  // AES Decryption - accepts URL-safe Base64
+  private decryptAES(encryptedData: string, iv?: string): string | null {
+    try {
+      if (!encryptedData) {
+        console.error('DecryptAES: Empty encrypted data');
+        return null;
+      }
+
+      console.log('Input encrypted data (URL-safe):', encryptedData);
+
+      // Convert URL-safe Base64 to standard Base64
+      const standardBase64 = this.urlSafeToStandardBase64(encryptedData);
+      console.log('Converted to standard Base64:', standardBase64);
+
+      const config: any = {
+        mode: CryptoJS.mode.ECB,
+        padding: CryptoJS.pad.Pkcs7
+      };
+
+      // Uncomment for AES-CBC support
+      // if (iv) {
+      //   config.iv = CryptoJS.enc.Hex.parse(iv);
+      //   config.mode = CryptoJS.mode.CBC;
+      // }
+
+      const bytes = CryptoJS.AES.decrypt(standardBase64, AES_KEY, config);
+      const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+
+      if (!decrypted) {
+        console.error('DecryptAES: Empty decrypted data');
+        return null;
+      }
+
+      console.log('Decrypted data:', decrypted);
+      return decrypted;
+    } catch (e) {
+      console.error('DecryptAES error:', e, 'Input:', encryptedData);
+      return null;
+    }
+  }
+
+  // Signup method
   signup(data: SignUpRequest): Observable<SignUpResponse> {
-    return this.http.post<SignUpResponse>(`${this.baseUrl}/signup/`, data);
+    const jsonData = JSON.stringify(data);
+    try {
+      JSON.parse(jsonData);
+    } catch (e) {
+      return throwError(() => new Error('Invalid JSON data'));
+    }
+    const encryptedData = this.encryptAES(jsonData);
+    const payload = { data: encryptedData };
+    return this.http.post<SignUpResponse>(`${this.baseUrl}/signup/`, payload).pipe(
+      catchError((err) => throwError(() => err))
+    );
   }
 
+  // Updated login method with encryption and decryption
+  login(credentials: LoginRequest): Observable<LoginResponse> {
+    const jsonData = JSON.stringify(credentials);
+    try {
+      JSON.parse(jsonData);
+    } catch (e) {
+      return throwError(() => new Error('Invalid JSON data'));
+    }
+    const encryptedData = this.encryptAES(jsonData);
+    const payload = { data: encryptedData };
+    return this.http.post<LoginResponse>(`${this.baseUrl}/login/`, payload).pipe(
+      map((response: LoginResponse) => {
+        console.log('Raw login response:', JSON.stringify(response, null, 2));
+        if (response.status !== 200) {
+          throw new Error(`Login failed: ${response.message || 'Unknown error'}`);
+        }
+        if (!('data' in response.data)) {
+          // Handle non-encrypted response
+          if ('user_id' in response.data && 'access_token' in response.data && 'refresh_token' in response.data) {
+            return response;
+          }
+          throw new Error('Invalid login response format: Expected encrypted or decrypted data');
+        }
+        const encryptedData = response.data.data;
+        if (!encryptedData) {
+          throw new Error('Invalid login response: Empty encrypted data');
+        }
+        const iv = (response.data as any).iv;
+        const decryptedData = this.decryptAES(encryptedData, iv);
+        if (!decryptedData) {
+          throw new Error('Failed to decrypt login response');
+        }
+        try {
+          const parsedData = JSON.parse(decryptedData);
+          console.log('Parsed decrypted data:', parsedData);
+          if (!parsedData.user_id || !parsedData.access_token || !parsedData.refresh_token) {
+            throw new Error('Incomplete decrypted data');
+          }
+          return {
+            ...response,
+            data: {
+              user_id: parseInt(parsedData.user_id, 10),
+              name: parsedData.name || '',
+              email: parsedData.email || '',
+              role_id: parsedData.role_id ? parseInt(parsedData.role_id, 10) : undefined,
+              role_name: parsedData.role_name || undefined,
+              access_token: parsedData.access_token,
+              refresh_token: parsedData.refresh_token
+            }
+          };
+        } catch (e) {
+          console.error('JSON parse error:', e, 'Decrypted data:', decryptedData);
+          throw new Error('Failed to parse decrypted data');
+        }
+      }),
+      catchError((err) => {
+        console.error('Login error:', err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  // Forgot password
+  forgotPassword(data: ForgotPasswordRequest): Observable<ForgotPasswordResponse> {
+    const jsonData = JSON.stringify(data);
+    try {
+      JSON.parse(jsonData);
+    } catch (e) {
+      return throwError(() => new Error('Invalid JSON data'));
+    }
+    const encryptedData = this.encryptAES(jsonData);
+    const payload = { data: encryptedData };
+    return this.http.post<ForgotPasswordResponse>(`${this.baseUrl}/reset_password/`, payload).pipe(
+      map((response: ForgotPasswordResponse) => {
+        console.log('Raw forgot password response:', response);
+        return response;
+      }),
+      catchError((err) => {
+        console.error('Forgot password error:', err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  // Validate reset token
   validateResetToken(data: ValidateResetTokenRequest): Observable<ValidateResetTokenResponse> {
-    return this.http.post<ValidateResetTokenResponse>(`${this.baseUrl}/validate-token/`, data);
+    const jsonData = JSON.stringify(data);
+    try {
+      JSON.parse(jsonData);
+    } catch (e) {
+      return throwError(() => new Error('Invalid JSON data'));
+    }
+    const encryptedData = this.encryptAES(jsonData);
+    const payload = { data: encryptedData };
+    return this.http.post<ValidateResetTokenResponse>(`${this.baseUrl}/validate-token/`, payload).pipe(
+      map((response: ValidateResetTokenResponse) => {
+        console.log('Raw validate token response:', response);
+        return response;
+      }),
+      catchError((err) => {
+        console.error('Validate token error:', err);
+        return throwError(() => err);
+      })
+    );
   }
 
-  resetPassword(data: ResetPasswordRequest): Observable<ResetPasswordResponse> {
-    return this.http.put<ResetPasswordResponse>(`${this.baseUrl}/reset_password/${data.user_id}/`, {
-      token: data.token,
-      new_password: data.new_password,
-      confirm_password: data.confirm_password
-    });
+  // Reset password
+  resetPassword(user_id: string, data: ResetPasswordRequest): Observable<ResetPasswordResponse> {
+    const jsonData = JSON.stringify(data);
+    try {
+      JSON.parse(jsonData);
+    } catch (e) {
+      return throwError(() => new Error('Invalid JSON data'));
+    }
+    const encryptedData = this.encryptAES(jsonData);
+    const payload = { data: encryptedData };
+    return this.http.put<ResetPasswordResponse>(`${this.baseUrl}/reset_password/${user_id}/`, payload).pipe(
+      catchError((err) => throwError(() => err))
+    );
   }
 
   refreshToken(refreshToken: string): Observable<RefreshResponse> {
@@ -318,13 +510,11 @@ export class ApiService {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('page_size', pageSize.toString());
-
     if (filters) {
       if (filters.name) params = params.set('name', filters.name);
       if (filters.email) params = params.set('email', filters.email);
       if (filters.role !== undefined) params = params.set('role', filters.role.toString());
     }
-
     return this.http.get<UsersResponse>(`${this.baseUrl}/users/`, {
       headers: this.getAuthHeaders(),
       params
@@ -353,7 +543,6 @@ export class ApiService {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('page_size', pageSize.toString());
-
     if (filters) {
       if (filters.name) params = params.set('name', filters.name);
       if (filters.is_active !== undefined) params = params.set('is_active', filters.is_active.toString());
@@ -361,7 +550,6 @@ export class ApiService {
       if (filters.from_date) params = params.set('from_date', filters.from_date);
       if (filters.to_date) params = params.set('to_date', filters.to_date);
     }
-
     return this.http.get<CategoryResponse>(`${this.baseUrl}/categories/`, {
       headers: this.getAuthHeaders(),
       params
@@ -399,12 +587,10 @@ export class ApiService {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('page_size', pageSize.toString());
-
     if (filters) {
       if (filters.category) params = params.set('category', filters.category.toString());
       if (filters.is_active !== undefined) params = params.set('is_active', filters.is_active.toString());
     }
-
     return this.http.get<SlotResponse>(`${this.baseUrl}/slots/`, {
       headers: this.getAuthHeaders(),
       params
@@ -439,7 +625,6 @@ export class ApiService {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('page_size', pageSize.toString());
-
     if (filters) {
       if (filters.slot_id) params = params.set('slot_id', filters.slot_id.toString());
       if (filters.user_id) params = params.set('user_id', filters.user_id.toString());
@@ -447,7 +632,6 @@ export class ApiService {
       if (filters.from_date) params = params.set('from_date', filters.from_date);
       if (filters.to_date) params = params.set('to_date', filters.to_date);
     }
-
     return this.http.get<BookingResponse>(`${this.baseUrl}/bookings/`, {
       headers: this.getAuthHeaders(),
       params
@@ -530,16 +714,20 @@ export class ApiService {
   }
 
   handleLoginSuccess(response: LoginResponse): void {
-    this.setTokens(response.data.access_token, response.data.refresh_token);
-    localStorage.setItem('login_response', JSON.stringify(response));
-    localStorage.setItem('user_id', response.data.user_id.toString());
-    localStorage.setItem('name', response.data.name);
-    localStorage.setItem('email', response.data.email);
-    if (response.data.role_id !== undefined) {
-      localStorage.setItem('role_id', response.data.role_id.toString());
+    if ('data' in response.data) {
+      throw new Error('Response data not decrypted');
     }
-    if (response.data.role_name) {
-      localStorage.setItem('role_name', response.data.role_name);
+    const data = response.data as DecryptedLoginData;
+    this.setTokens(data.access_token, data.refresh_token);
+    localStorage.setItem('login_response', JSON.stringify(response));
+    localStorage.setItem('user_id', data.user_id.toString());
+    localStorage.setItem('name', data.name);
+    localStorage.setItem('email', data.email);
+    if (data.role_id !== undefined) {
+      localStorage.setItem('role_id', data.role_id.toString());
+    }
+    if (data.role_name) {
+      localStorage.setItem('role_name', data.role_name);
     }
   }
 

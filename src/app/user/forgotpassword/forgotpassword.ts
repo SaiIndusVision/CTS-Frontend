@@ -38,7 +38,25 @@ export class ForgotPasswordComponent {
 
   constructor(private apiService: ApiService, private router: Router, private snackBar: MatSnackBar) {}
 
+  validateEmail(): string | null {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!this.forgotPasswordData.email) {
+      return 'Email is required';
+    }
+    if (!emailRegex.test(this.forgotPasswordData.email)) {
+      return 'Please enter a valid email address';
+    }
+    return null;
+  }
+
   onSubmit(): void {
+    const validationError = this.validateEmail();
+    if (validationError) {
+      this.errorMessage = validationError;
+      this.snackBar.open(this.errorMessage, 'Close', { duration: 5000, panelClass: ['bg-red-600', 'text-white'] });
+      return;
+    }
+
     this.loading = true;
     this.errorMessage = '';
     this.successMessage = '';
@@ -46,19 +64,13 @@ export class ForgotPasswordComponent {
     this.apiService.forgotPassword(this.forgotPasswordData).subscribe({
       next: (response: ForgotPasswordResponse) => {
         this.successMessage = response.message || 'A password reset link has been sent to your email.';
-        this.snackBar.open(this.successMessage, 'Close', { 
-          duration: 5000,
-          panelClass: ['bg-green-600', 'text-white']
-        });
-        this.forgotPasswordData.email = ''; // Clear the form
+        this.snackBar.open(this.successMessage, 'Close', { duration: 5000, panelClass: ['bg-green-600', 'text-white'] });
+        this.forgotPasswordData.email = '';
         this.loading = false;
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Failed to send reset email. Please try again.';
-        this.snackBar.open(this.errorMessage, 'Close', { 
-          duration: 5000,
-          panelClass: ['bg-red-600', 'text-white']
-        });
+        this.snackBar.open(this.errorMessage, 'Close', { duration: 5000, panelClass: ['bg-red-600', 'text-white'] });
         this.loading = false;
       },
       complete: () => (this.loading = false)

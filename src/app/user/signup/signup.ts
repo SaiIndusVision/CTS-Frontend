@@ -53,7 +53,37 @@ export class SignUpComponent {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
 
+  // Client-side validation
+  private validateForm(): string | null {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{8,}$/;
+
+
+    if (!this.signupData.name.trim()) {
+      return 'Name is required';
+    }
+    if (!emailRegex.test(this.signupData.email)) {
+      return 'Please enter a valid email address';
+    }
+    if (!passwordRegex.test(this.signupData.password)) {
+      return 'Password must be at least 8 characters long, with at least one uppercase letter, one lowercase letter, one number, and one special character';
+    }
+    if (this.signupData.password !== this.signupData.confirm_password) {
+      return 'Passwords do not match';
+    }
+    return null;
+}
+
+
   onSubmit(): void {
+    // Perform client-side validation
+    const validationError = this.validateForm();
+    if (validationError) {
+      this.errorMessage = validationError;
+      this.snackBar.open(this.errorMessage, 'Close', { duration: 5000 });
+      return;
+    }
+
     this.loading = true;
     this.errorMessage = '';
 
@@ -64,7 +94,10 @@ export class SignUpComponent {
         this.router.navigate(['/login']);
       },
       error: (err) => {
-        this.errorMessage = err.error?.message || 'Signup failed. Please try again.';
+        // Handle specific backend error messages
+        this.errorMessage =
+          err.error?.message ||
+          'Signup failed. Please try again.';
         this.snackBar.open(this.errorMessage, 'Close', { duration: 5000 });
         this.loading = false;
       },
