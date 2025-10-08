@@ -7,7 +7,7 @@ import { environment } from '../../environments/environments';
 import * as CryptoJS from 'crypto-js';
 
 // AES Key (hardcoded for this example; use environment variables in production)
-const AES_KEY = CryptoJS.enc.Hex.parse('03C597A3660D50B59332AE1603A94AC2');
+const AES_KEY = CryptoJS.enc.Hex.parse(environment.AES_KEY);
 
 // Interfaces (unchanged, included for completeness)
 export interface LoginRequest {
@@ -517,7 +517,7 @@ export class ApiService {
   }
 
   refreshToken(refreshToken: string): Observable<RefreshResponse> {
-    return this.http.post<RefreshResponse>(`${this.baseUrl}/token/refresh/`, { refresh: refreshToken });
+    return this.http.post<RefreshResponse>(`${this.baseUrl}/refresh_token/`, { refresh: refreshToken });
   }
 
   getUsers(page: number, pageSize: number, filters?: { name?: string; email?: string; role?: number }): Observable<UsersResponse> {

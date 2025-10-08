@@ -133,7 +133,10 @@ export class UserListComponent implements OnInit {
   onCardClick(userId: number): void {
     if (!userId || isNaN(userId)) {
       this.errorMessage = 'Invalid user ID provided.';
-      this.snackBar.open(this.errorMessage, 'Close', { duration: 5000, panelClass: ['bg-red-600', 'text-white'] });
+      this.snackBar.open(this.errorMessage, 'Close', {
+        duration: 5000,
+        panelClass: ['bg-red-600', 'text-white']
+      });
       return;
     }
 
@@ -146,14 +149,20 @@ export class UserListComponent implements OnInit {
         if (!success) {
           console.error('Navigation failed for encrypted userId:', encryptedUserId);
           this.errorMessage = 'Navigation failed. Please try again.';
-          this.snackBar.open(this.errorMessage, 'Close', { duration: 5000, panelClass: ['bg-red-600', 'text-white'] });
+          this.snackBar.open(this.errorMessage, 'Close', {
+            duration: 5000,
+            panelClass: ['bg-red-600', 'text-white']
+          });
         }
       });
     } catch (error) {
       console.error('Encryption error in onCardClick:', error, 'userId:', userId);
       this.loadingCard = null;
       this.errorMessage = 'Failed to encrypt user ID. Please try again.';
-      this.snackBar.open(this.errorMessage, 'Close', { duration: 5000, panelClass: ['bg-red-600', 'text-white'] });
+      this.snackBar.open(this.errorMessage, 'Close', {
+        duration: 5000,
+        panelClass: ['bg-red-600', 'text-white']
+      });
     }
   }
 }

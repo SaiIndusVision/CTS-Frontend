@@ -2,8 +2,7 @@
   <mat-sidenav mode="side" opened class="modern-sidenav">
     <div class="sidebar-header">
       <div class="logo-container">
-          <!-- <mat-icon>admin_panel_settings</mat-icon> -->
-           <img src="https://res.cloudinary.com/dbm1vxr2h/image/upload/v1759568506/SlotifyLogo1_f0slsz.png" style="width: 100%;filter: brightness(0);" alt="Logo">
+        <img src="https://res.cloudinary.com/dbm1vxr2h/image/upload/v1759568506/SlotifyLogo1_f0slsz.png" style="width: 100%;filter: brightness(0);" alt="Logo">
       </div>
     </div>
     <app-sidebar></app-sidebar>
@@ -79,12 +78,11 @@
             <div
               *ngFor="let user of users"
               class="user-card"
-              [routerLink]="['/bookings', user.id]"
+              (click)="onCardClick(user.id)"
               matTooltip="View user's bookings"
               matTooltipPosition="above"
               aria-label="View bookings for {{ user.name }}"
               role="button"
-              (click)="onCardClick(user.id)"
             >
               <div *ngIf="loadingCard === user.id" class="loading-overlay">
                 <mat-spinner diameter="40"></mat-spinner>
@@ -107,7 +105,7 @@
                     mat-raised-button
                     color="primary"
                     class="view-bookings-btn"
-                    [routerLink]="['/bookings', user.id]"
+                    (click)="onCardClick(user.id)"
                     matTooltip="View user's bookings"
                     matTooltipPosition="right"
                     aria-label="View bookings for {{ user.name }}"
@@ -200,3 +198,7 @@
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>
+
+
+
+
