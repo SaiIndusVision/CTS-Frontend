@@ -418,6 +418,7 @@
           font-size: 18px;
           width: 18px;
           height: 18px;
+          color: white;
         }
 
         &.edit-btn {
@@ -628,7 +629,14 @@
     }
   }
 }
-
+mat-icon{
+  color:#667eea
+}
+.header-cell{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 @keyframes fadeIn {
   from {
     opacity: 0;

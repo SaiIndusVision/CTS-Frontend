@@ -23,7 +23,7 @@
         </div>
         <div class="header-actions">
           <button mat-raised-button color="primary" (click)="openCreateDialog()" class="create-btn">
-            <mat-icon>add</mat-icon>
+            <mat-icon style="color: white;">add</mat-icon>
             Create Slot
           </button>
           <button mat-icon-button (click)="toggleViewMode()" class="view-toggle-btn" title="Toggle View">
@@ -58,7 +58,7 @@
           </mat-form-field>
 
           <button mat-raised-button color="primary" type="submit" class="apply-btn">
-            <mat-icon>search</mat-icon>
+            <mat-icon style="color: white;">search</mat-icon>
             Apply Filters
           </button>
         </form>
@@ -207,7 +207,7 @@
 <!-- Create/Edit Dialog (used as a template for MatDialog) -->
 <ng-template #slotDialog let-data>
   <div class="dialog-header">
-    <h2 mat-dialog-title>{{ data.isEdit ? 'Edit Slot' : 'Create Slot' }}</h2>
+    <h2 mat-dialog-title >{{ data.isEdit ? 'Edit Slot' : 'Create Slot' }}</h2>
     <button mat-icon-button mat-dialog-close class="close-btn">
       <mat-icon>close</mat-icon>
     </button>

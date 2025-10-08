@@ -40,7 +40,6 @@ export class SidebarComponent implements OnInit {
 
   private userNavItems = [
     { route: '/user-slot', icon: 'event', label: 'Slots' }
-    // 'My Bookings' route will be added dynamically with userId
   ];
 
   constructor(private apiService: ApiService, private router: Router) {}
@@ -53,15 +52,15 @@ export class SidebarComponent implements OnInit {
     console.log('Sidebar initialized with role:', this.role, 'userId:', this.userId);
 
     if (this.role === 'User' && this.userId) {
+      const encryptedUserId = this.apiService.encryptUserId(this.userId);
       this.navItems = [
         ...this.userNavItems,
-        { route: `/bookings/${this.userId}`, icon: 'book_online', label: 'My Bookings' }
+        { route: `/bookings/${encryptedUserId}`, icon: 'book_online', label: 'My Bookings' }
       ];
     } else {
       this.navItems = this.adminNavItems;
     }
 
-    // Log route changes to verify active state
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {

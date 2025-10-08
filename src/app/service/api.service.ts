@@ -9,7 +9,7 @@ import * as CryptoJS from 'crypto-js';
 // AES Key (hardcoded for this example; use environment variables in production)
 const AES_KEY = CryptoJS.enc.Hex.parse('03C597A3660D50B59332AE1603A94AC2');
 
-// Interfaces
+// Interfaces (unchanged, included for completeness)
 export interface LoginRequest {
   email: string;
   password: string;
@@ -294,9 +294,7 @@ export class ApiService {
 
   // Convert URL-safe Base64 to standard Base64
   private urlSafeToStandardBase64(urlSafe: string): string {
-    // Replace URL-safe characters with standard Base64 characters
     let standard = urlSafe.replace(/-/g, '+').replace(/_/g, '/');
-    // Add padding if needed
     const padding = (4 - (standard.length % 4)) % 4;
     standard += '='.repeat(padding);
     return standard;
@@ -314,7 +312,6 @@ export class ApiService {
         mode: CryptoJS.mode.ECB,
         padding: CryptoJS.pad.Pkcs7
       });
-      // Get standard base64 and convert to URL-safe
       const standardBase64 = cipher.toString();
       const urlSafeBase64 = this.standardToUrlSafeBase64(standardBase64);
       console.log('Encrypted data (URL-safe):', urlSafeBase64);
@@ -332,36 +329,54 @@ export class ApiService {
         console.error('DecryptAES: Empty encrypted data');
         return null;
       }
-
       console.log('Input encrypted data (URL-safe):', encryptedData);
-
-      // Convert URL-safe Base64 to standard Base64
       const standardBase64 = this.urlSafeToStandardBase64(encryptedData);
       console.log('Converted to standard Base64:', standardBase64);
-
       const config: any = {
         mode: CryptoJS.mode.ECB,
         padding: CryptoJS.pad.Pkcs7
       };
-
-      // Uncomment for AES-CBC support
-      // if (iv) {
-      //   config.iv = CryptoJS.enc.Hex.parse(iv);
-      //   config.mode = CryptoJS.mode.CBC;
-      // }
-
       const bytes = CryptoJS.AES.decrypt(standardBase64, AES_KEY, config);
       const decrypted = bytes.toString(CryptoJS.enc.Utf8);
-
       if (!decrypted) {
         console.error('DecryptAES: Empty decrypted data');
         return null;
       }
-
       console.log('Decrypted data:', decrypted);
       return decrypted;
     } catch (e) {
       console.error('DecryptAES error:', e, 'Input:', encryptedData);
+      return null;
+    }
+  }
+
+  // Utility to encrypt userId
+  encryptUserId(userId: number): string {
+    try {
+      const userIdStr = userId.toString();
+      return this.encryptAES(userIdStr);
+    } catch (e) {
+      console.error('EncryptUserId error:', e);
+      throw new Error('Failed to encrypt user ID');
+    }
+  }
+
+  // Utility to decrypt userId
+  decryptUserId(encryptedUserId: string): number | null {
+    try {
+      const decrypted = this.decryptAES(encryptedUserId);
+      if (!decrypted) {
+        console.error('DecryptUserId: Failed to decrypt user ID');
+        return null;
+      }
+      const userId = parseInt(decrypted, 10);
+      if (isNaN(userId)) {
+        console.error('DecryptUserId: Decrypted value is not a valid number', decrypted);
+        return null;
+      }
+      return userId;
+    } catch (e) {
+      console.error('DecryptUserId error:', e, 'Input:', encryptedUserId);
       return null;
     }
   }
@@ -398,7 +413,6 @@ export class ApiService {
           throw new Error(`Login failed: ${response.message || 'Unknown error'}`);
         }
         if (!('data' in response.data)) {
-          // Handle non-encrypted response
           if ('user_id' in response.data && 'access_token' in response.data && 'refresh_token' in response.data) {
             return response;
           }
